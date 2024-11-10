@@ -1,0 +1,35 @@
+name: 4nodes
+
+topology:
+  nodes:
+    node1:
+      kind: linux
+      image: quay.io/frrouting/frr:10.1.1
+      binds:
+        - daemons:/etc/frr/daemons
+        - nodes/r1.conf:/etc/frr/frr.conf
+    node2:
+      kind: linux
+      image: quay.io/frrouting/frr:10.1.1
+      binds:
+        - daemons:/etc/frr/daemons
+        - nodes/r2.conf:/etc/frr/frr.conf
+    node3:
+      kind: linux
+      image: quay.io/frrouting/frr:10.1.1
+      binds:
+        - daemons:/etc/frr/daemons
+        - nodes/r3.conf:/etc/frr/frr.conf
+    node4:
+      kind: linux
+      image: quay.io/frrouting/frr:10.1.1
+      binds:
+        - daemons:/etc/frr/daemons
+        - nodes/r4.conf:/etc/frr/frr.conf
+
+  links:
+    - endpoints: ["node1:eth-r", "node2:eth-l"]
+    - endpoints: ["node1:eth-b", "node4:eth-t"]
+    - endpoints: ["node2:eth-b", "node3:eth-t"]
+    - endpoints: ["node2:eth-lb", "node4:eth-tr"]
+    - endpoints: ["node3:eth-l", "node4:eth-r"]
