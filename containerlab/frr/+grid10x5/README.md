@@ -42,3 +42,11 @@ eth-l --- node-x-y --- eth-r
           eth-b
 
 ```
+
+## 如何使用
+
+1. 分别运行`generate_conf.py`和`generate_topo.py`，生成 containerlab 的 yml 文件和 frr 的 osfp 配置文件
+
+2. sudo clab deploy --topo grid.clab.yml 启动容器
+
+3. 结束后使用 sudo clab destroy --topo grid.clab.yml 销毁容器
