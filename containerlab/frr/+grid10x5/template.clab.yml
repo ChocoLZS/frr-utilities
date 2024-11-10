@@ -1,0 +1,37 @@
+name: rid-10-5
+
+topology:
+  defaults:
+    kind: linux
+    image: quay.io/frrouting/frr:10.1.1
+    binds:
+      - daemons:/etc/frr/daemons
+  nodes:
+    {% for row in range(1, 6) %}
+      {% for col in range(1, 11) %}
+    node-{{ row }}-{{ col }}:
+      binds:
+        - nodes/node-{{ row }}-{{ col }}.conf:/etc/frr/frr.conf
+      {% endfor %}
+    {% endfor %}
+
+  links:
+  # 横向连接
+    {% for row in range(1, 6) %}
+      {% for col in range(1, 10) %}
+    - endpoints: ["node-{{ row }}-{{ col }}:eth-r", "node-{{ row }}-{{ col + 1 }}:eth-l"]
+      {% endfor %}
+    {% endfor %}
+    # 纵向连接
+    {% for row in range(1, 5) %}
+      {% for col in range(1, 11) %}
+    - endpoints: ["node-{{ row }}-{{ col }}:eth-t", "node-{{ row + 1 }}-{{ col }}:eth-b"]
+      {% endfor %}
+    {% endfor %}
+    # 环回连接
+    {% for row in range(1, 6) %}
+    - endpoints: ["node-{{ row }}-10:eth-r", "node-{{ row }}-1:eth-l"]
+    {% endfor %}
+    {% for col in range(1, 11) %}
+    - endpoints: ["node-5-{{ col }}:eth-t", "node-1-{{ col }}:eth-b"]
+    {% endfor %}

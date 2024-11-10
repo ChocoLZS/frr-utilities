@@ -1,2 +1,7 @@
+# containerlab
 clab-*
 *.bak
+
+# python
+.venv
+__pycache__
