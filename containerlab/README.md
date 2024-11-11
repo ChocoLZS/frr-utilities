@@ -10,6 +10,8 @@ Unfortunately, container orchestration tools like **docker-compose are not** a g
 
 ## 链路参数设置
 
+> 由 ChatGPT 生成
+
 [设置链路参数](https://containerlab.dev/cmd/tools/netem/set/#setting-link-impairments)
 
 **NetEm**（Network Emulator 的简称）是 Linux 内核中的一种网络排队学科（Queuing Discipline），用于在网络设备上模拟各种网络特性，包括延迟（Delay）、抖动（Jitter）、丢包（Packet Loss）、重复（Duplication）和乱序（Reordering）等。通过使用 NetEm，您可以在本地网络环境中模拟真实网络中的不稳定因素，以测试和验证网络应用程序在不同网络条件下的性能和可靠性。
