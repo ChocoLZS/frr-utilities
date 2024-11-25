@@ -1,0 +1,52 @@
+name: ovs
+
+topology:
+  defaults:
+    kind: linux
+    image: frr-alpine:latest
+    binds:
+      - daemons:/etc/frr/daemons
+  nodes:
+    r1:
+      binds:
+        - nodes/r1.conf:/etc/frr/frr.conf
+    r2:
+      binds:
+        - nodes/r2.conf:/etc/frr/frr.conf
+    r3:
+      binds:
+        - nodes/r3.conf:/etc/frr/frr.conf
+    r4:
+      binds:
+        - nodes/r4.conf:/etc/frr/frr.conf
+    sw12:
+      kind: ovs-bridge
+    sw21:
+      kind: ovs-bridge
+    sw23:
+      kind: ovs-bridge
+    sw32:
+      kind: ovs-bridge
+    sw34:
+      kind: ovs-bridge
+    sw43:
+      kind: ovs-bridge
+    sw14:
+      kind: ovs-bridge
+    sw41:
+      kind: ovs-bridge
+    sw24:
+      kind: ovs-bridge
+    sw42:
+      kind: ovs-bridge
+  links:
+    - endpoints: ["r1:eth-12", "sw12:ovs12"]
+    - endpoints: ["r1:eth-14", "sw14:ovs14"]
+    - endpoints: ["r2:eth-21", "sw21:ovs21"]
+    - endpoints: ["r2:eth-23", "sw23:ovs23"]
+    - endpoints: ["r2:eth-24", "sw24:ovs24"]
+    - endpoints: ["r3:eth-32", "sw32:ovs32"]
+    - endpoints: ["r3:eth-34", "sw34:ovs34"]
+    - endpoints: ["r4:eth-41", "sw41:ovs41"]
+    - endpoints: ["r4:eth-42", "sw42:ovs42"]
+    - endpoints: ["r4:eth-43", "sw43:ovs43"]
