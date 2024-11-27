@@ -1,0 +1,31 @@
+name: bgp
+
+topology:
+  defaults:
+    kind: linux
+    image: frr-alpine:latest
+    binds:
+      - daemons:/etc/frr/daemons
+  nodes:
+    r1:
+      binds:
+        # - ./configs/r1.conf:/etc/frr/frr.conf
+    r2:
+      binds:
+        # - ./configs/r2.conf:/etc/frr/frr.conf
+    r3:
+      binds:
+        # - ./configs/r3.conf:/etc/frr/frr.conf
+    r4:
+      binds:
+        # - ./configs/r4.conf:/etc/frr/frr.conf
+    r5:
+      binds:
+        # - ./configs/r5.conf:/etc/frr/frr.conf
+
+  links:
+    - endpoints: ["r1:eth-1-2", "r2:eth-2-1"]
+    - endpoints: ["r2:eth-2-3", "r3:eth-3-2"]
+    - endpoints: ["r2:eth-2-4", "r4:eth-4-2"]
+    - endpoints: ["r3:eth-3-5", "r5:eth-5-3"]
+    - endpoints: ["r4:eth-4-5", "r5:eth-5-4"]
