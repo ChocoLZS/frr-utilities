@@ -1,3 +1,6 @@
 [submodule "containerlab/example/clab_sdn_dcn"]
 	path = containerlab/example/clab_sdn_dcn
 	url = https://github.com/martimy/clab_sdn_dcn.git
+[submodule "containerlab/example/clab_bgp_frr"]
+	path = containerlab/example/clab_bgp_frr
+	url = https://github.com/martimy/clab-bgp-frr.git
