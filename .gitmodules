@@ -4,3 +4,6 @@
 [submodule "containerlab/example/clab_bgp_frr"]
 	path = containerlab/example/clab_bgp_frr
 	url = https://github.com/martimy/clab-bgp-frr.git
+[submodule "containerlab/example/containerlab_snat_demo"]
+	path = containerlab/example/containerlab_snat_demo
+	url = https://github.com/tnorlin/containerlab-snat-demo.git
