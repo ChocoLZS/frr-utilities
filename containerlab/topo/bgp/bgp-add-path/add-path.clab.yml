@@ -22,10 +22,18 @@ topology:
     r5:
       binds:
         - ./configs/r5.conf:/etc/frr/frr.conf
+    r6:
+      binds:
+        - ./configs/r6.conf:/etc/frr/frr.conf
+    dummy:
 
   links:
     - endpoints: ["r1:eth-1-2", "r2:eth-2-1"]
+    - endpoints: ["r6:eth-6-2", "r2:eth-2-6"]
     - endpoints: ["r2:eth-2-3", "r3:eth-3-2"]
     - endpoints: ["r2:eth-2-4", "r4:eth-4-2"]
     - endpoints: ["r3:eth-3-5", "r5:eth-5-3"]
     - endpoints: ["r4:eth-4-5", "r5:eth-5-4"]
+    - endpoints: ["r5:eth-55", "dummy:eth-55"]
+    - endpoints: ["r1:eth-11", "dummy:eth-11"]
+    - endpoints: ["r6:eth-66", "dummy:eth-66"]

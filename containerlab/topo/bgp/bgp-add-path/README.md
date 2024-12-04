@@ -4,6 +4,7 @@
 graph
     subgraph AS_100
         R1[Router R1] --> R2[Router R2]
+        R6[Router R6] --> R2[Router R2]
     end
 
     subgraph AS_200
