@@ -1,0 +1,55 @@
+name: bgp
+
+topology:
+  defaults:
+    kind: linux
+    image: frr-alpine:latest
+    binds:
+      - daemons:/etc/frr/daemons
+  nodes:
+    r11:
+      binds:
+        - ./configs/r11.conf:/etc/frr/frr.conf
+    r12:
+      binds:
+        - ./configs/r12.conf:/etc/frr/frr.conf
+    r21:
+      binds:
+        - ./configs/r21.conf:/etc/frr/frr.conf
+    r22:
+      binds:
+        - ./configs/r22.conf:/etc/frr/frr.conf
+    r23:
+      binds:
+        - ./configs/r23.conf:/etc/frr/frr.conf
+    r31:
+      binds:
+        - ./configs/r31.conf:/etc/frr/frr.conf
+    r32:
+      binds:
+        - ./configs/r32.conf:/etc/frr/frr.conf
+    r33:
+      binds:
+        - ./configs/r33.conf:/etc/frr/frr.conf
+    h1:
+      exec:
+        - ip addr add 100.1.1.100/24 dev eth-r11
+        - ip route replace 0/0 via 100.1.1.1
+    h3:
+      exec:
+        - ip addr add 103.3.3.100/24 dev eth-r33
+        - ip route replace 0/0 via 103.3.3.1
+    dummy:
+
+  links:
+    - endpoints: ["r11:eth-r12", "r12:eth-r11"]
+    - endpoints: ["r12:eth-r21", "r21:eth-r12"]
+    - endpoints: ["r12:eth-r22", "r22:eth-r12"]
+    - endpoints: ["r21:eth-r23", "r23:eth-r21"]
+    - endpoints: ["r22:eth-r23", "r23:eth-r22"]
+    - endpoints: ["r23:eth-r31", "r31:eth-r23"]
+    - endpoints: ["r23:eth-r32", "r32:eth-r23"]
+    - endpoints: ["r31:eth-r33", "r33:eth-r31"]
+    - endpoints: ["r32:eth-r33", "r33:eth-r32"]
+    - endpoints: ["r11:eth-h1", "h1:eth-r11"]
+    - endpoints: ["r33:eth-h3", "h3:eth-r33"]
