@@ -1,0 +1,30 @@
+name: iperf
+
+topology:
+  defaults:
+    kind: linux
+    image: frr-alpine:latest
+    binds:
+      - daemons:/etc/frr/daemons
+  nodes:
+    r1:
+      binds:
+        - ./configs/r1.conf:/etc/frr/frr.conf
+    r2:
+      binds:
+        - ./configs/r2.conf:/etc/frr/frr.conf
+    h1:
+      exec:
+        - apk add iperf3
+        - ip addr add 101.1.1.100/24 dev eth-r1
+        - ip route replace 0/0 via 101.1.1.1
+    h2:
+      exec:
+        - apk add iperf3
+        - ip addr add 102.2.2.100/24 dev eth-r2
+        - ip route replace 0/0 via 102.2.2.1
+
+  links:
+    - endpoints: ["r1:eth-r2", "r2:eth-r1"]
+    - endpoints: ["r1:eth-h1", "h1:eth-r1"]
+    - endpoints: ["r2:eth-h2", "h2:eth-r2"]
