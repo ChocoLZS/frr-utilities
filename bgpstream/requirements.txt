@@ -1,0 +1,4 @@
+networkx==3.4.2
+pybgpstream==2.0.2
+python-dateutil==2.9.0.post0
+six==1.17.0
