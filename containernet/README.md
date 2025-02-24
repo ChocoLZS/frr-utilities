@@ -1,0 +1,3 @@
+# containernet
+
+Containernet is a fork of the famous Mininet network emulator and allows to use Docker containers as hosts in emulated network topologies. This enables interesting functionalities to build networking/cloud emulators and testbeds. Containernet is actively used by the research community, focussing on experiments in the field of cloud computing, fog computing, network function virtualization (NFV) and multi-access edge computing (MEC). One example for this is the NFV multi-PoP infrastructure emulator which was created by the SONATA-NFV project and is now part of the OpenSource MANO (OSM) project.
