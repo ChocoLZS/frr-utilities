@@ -70,11 +70,11 @@ class SimpleSwitch13(app_manager.RyuApp):
         macth_tcp = parser.OFPMatch(
             eth_type=ether_types.ETH_TYPE_IP, ip_proto=inet.IPPROTO_TCP
         )
+        """
+        1. OFPP_NORMAL: 发送至交换机的正常处理流程
+        2. OFPP_CONTROLLER: 发送至控制器（而且控制器只分析，并不处理）
+        """
         actions_tcp = [
-            """
-            1. OFPP_NORMAL: 发送至交换机的正常处理流程
-            2. OFPP_CONTROLLER: 发送至控制器（而且控制器只分析，并不处理）
-            """
             parser.OFPActionOutput(ofproto.OFPP_NORMAL, ofproto.OFPCML_NO_BUFFER),
             parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER),
         ]
