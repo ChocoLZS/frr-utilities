@@ -36,6 +36,9 @@ class SimpleSwitch13(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
+        """
+        控制交换机默认行为
+        """
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
@@ -61,13 +64,21 @@ class SimpleSwitch13(app_manager.RyuApp):
         # ]
         # self.add_flow(datapath, 100, match_icmp, actions_icmp)
 
+        """
+        捕获所有tcp包，并发送至控制器
+        """
         macth_tcp = parser.OFPMatch(
             eth_type=ether_types.ETH_TYPE_IP, ip_proto=inet.IPPROTO_TCP
         )
         actions_tcp = [
-            parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)
+            """
+            1. OFPP_NORMAL: 发送至交换机的正常处理流程
+            2. OFPP_CONTROLLER: 发送至控制器（而且控制器只分析，并不处理）
+            """
+            parser.OFPActionOutput(ofproto.OFPP_NORMAL, ofproto.OFPCML_NO_BUFFER),
+            parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER),
         ]
-        self.add_flow(datapath, 100, macth_tcp, actions_tcp)
+        self.add_flow(datapath, 1, macth_tcp, actions_tcp)
 
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
@@ -116,7 +127,9 @@ class SimpleSwitch13(app_manager.RyuApp):
             if (tcp_pkt.src_port == 179 or tcp_pkt.dst_port == 179) and not isinstance(
                 pkt.protocols[-1], tcp.tcp
             ):
+                # mirror the traffic
                 print(pkt.protocols[-1])
+                return
 
         eth = pkt.get_protocols(ethernet.ethernet)[0]
 
