@@ -17,7 +17,7 @@ from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER
 from ryu.controller.handler import set_ev_cls
-from ryu.ofproto import ofproto_v1_3
+from ryu.ofproto import ofproto_v1_3, inet
 from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
@@ -25,7 +25,6 @@ from ryu.lib.packet import ether_types
 from ryu.lib.packet import bgp, tcp, ipv6, ipv4, packet_base
 
 TCP = tcp.tcp.__name__
-BGP = bgp.BGPOpen.__name__
 
 
 class SimpleSwitch13(app_manager.RyuApp):
@@ -53,6 +52,22 @@ class SimpleSwitch13(app_manager.RyuApp):
             parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)
         ]
         self.add_flow(datapath, 0, match, actions)
+
+        # match_icmp = parser.OFPMatch(
+        #     eth_type=ether_types.ETH_TYPE_IP, ip_proto=inet.IPPROTO_ICMP
+        # )
+        # actions_icmp = [
+        #     parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)
+        # ]
+        # self.add_flow(datapath, 100, match_icmp, actions_icmp)
+
+        macth_tcp = parser.OFPMatch(
+            eth_type=ether_types.ETH_TYPE_IP, ip_proto=inet.IPPROTO_TCP
+        )
+        actions_tcp = [
+            parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)
+        ]
+        self.add_flow(datapath, 100, macth_tcp, actions_tcp)
 
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
@@ -91,19 +106,18 @@ class SimpleSwitch13(app_manager.RyuApp):
 
         pkt = packet.Packet(msg.data)
 
-        # print(pkt.protocols)
         header_list = dict(
             (p.protocol_name, p)
             for p in pkt.protocols
             if isinstance(p, packet_base.PacketBase)
         )
-        if BGP in header_list:
-            bgp_pkt = pkt.get_protocols(bgp.BGPOpen)[0]
-            print(bgp_pkt)
-        # if TCP in header_list:
-        #     tcp_pkt = pkt.get_protocols(tcp.tcp)[0]
-        #     if tcp_pkt.dst_port == 179 or tcp_pkt.src_port == 179:
-        #         print(tcp_pkt)
+        if TCP in header_list:
+            tcp_pkt = header_list[TCP]
+            if (tcp_pkt.src_port == 179 or tcp_pkt.dst_port == 179) and not isinstance(
+                pkt.protocols[-1], tcp.tcp
+            ):
+                print(pkt.protocols[-1])
+
         eth = pkt.get_protocols(ethernet.ethernet)[0]
 
         if eth.ethertype == ether_types.ETH_TYPE_LLDP:
@@ -116,7 +130,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         dpid = format(datapath.id, "d").zfill(16)
         self.mac_to_port.setdefault(dpid, {})
 
-        self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
+        # self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
 
         # learn a mac address to avoid FLOOD next time.
         self.mac_to_port[dpid][src] = in_port
@@ -138,6 +152,7 @@ class SimpleSwitch13(app_manager.RyuApp):
                 return
             else:
                 self.add_flow(datapath, 1, match, actions)
+                pass
         data = None
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
             data = msg.data

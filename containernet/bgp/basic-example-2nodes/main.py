@@ -14,7 +14,7 @@ import os
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 net = Containernet(
-    controller=Controller,
+    controller=RemoteController,
     switch=OVSKernelSwitch,
 )
 info("*** Adding controller\n")
@@ -40,13 +40,17 @@ d2 = net.addDocker(
         f"{file_path}/configs/r2.conf:/etc/frr/frr.conf",
     ],
 )
+h1 = net.addHost("h1", ip="100.1.1.100/24")
+h2 = net.addHost("h2", ip="102.2.2.100/24")
 info("*** Adding switches\n")
 s1 = net.addSwitch("s1")
 s2 = net.addSwitch("s2")
 info("*** Creating links\n")
 net.addLink(d1, s1, intfName1="eth-r2")
-net.addLink(s1, s2, cls=TCLink, delay="100ms", bw=1)
-net.addLink(s2, d2, intfName2="eth-r1")
+# net.addLink(s1, s2, cls=TCLink, delay="100ms", bw=1)
+net.addLink(d2, s1, intfName1="eth-r1")
+net.addLink(d1, h1, intfName1="eth-h1")
+net.addLink(d2, h2, intfName1="eth-h2")
 info("*** Starting network\n")
 net.start()
 info("*** Testing connectivity\n")
