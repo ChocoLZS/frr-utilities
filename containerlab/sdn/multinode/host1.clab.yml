@@ -1,0 +1,12 @@
+name: vxlan
+
+topology:
+  nodes:
+    r1:
+      kind: linux
+      image: quay.io/frrouting/frr:10.2.1
+      binds:
+        - ./configs/daemons:/etc/frr/daemons
+        - ./configs/r1.conf:/etc/frr/frr.conf
+  links:
+    - endpoints: ["r1:eth-vxlan", "host:vxlan-r1"]
