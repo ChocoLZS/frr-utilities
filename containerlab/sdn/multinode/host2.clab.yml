@@ -1,18 +1,19 @@
 name: vxlan
 
 topology:
-  nodes:
-    r2:
+  defaults:
       kind: linux
       image: quay.io/frrouting/frr:10.2.1
       binds:
         - ./configs/daemons:/etc/frr/daemons
+  nodes:
+    r2:
+      binds:
         - ./configs/r2.conf:/etc/frr/frr.conf
-    # vmx node is defined in a `vxlan-vmx.clab.yml` topo file
-    # that is launched on another VM
-
+    h2:
+      exec:
+        - ip addr add 102.2.2.100/24 dev eth-r2
+        - ip route replace 0/0 via 102.2.2.1
   links:
-    # we expose two sros container interfaces
-    # to host namespace by using host interfaces style
-    # docs: https://containerlab.dev/manual/network/#host-links
-    - endpoints: ["r2:eth-vxlan", "host:vxlan-r2"]
+    - endpoints: ["r2:eth-vxlan", "host:vxlan"]
+    - endpoints: ["r2:eth-h2", "h2:eth-r2"]
