@@ -1,0 +1,55 @@
+name: multias
+
+topology:
+  defaults:
+    kind: linux
+    image: frr-ovs:latest
+    binds:
+      - ./configs/daemons:/etc/frr/daemons
+  nodes:
+    r11:
+      binds:
+        - ./configs/r11.conf:/etc/frr/frr.conf
+      exec:
+        - sleep 1 # wait for ovs to start
+        - ovs-vsctl add-port br-ovs eth-r21
+        - ovs-vsctl add-port br-ovs eth-r31
+        - ovs-vsctl add-port br-ovs eth-h1
+    r21:
+      binds:
+        - ./configs/r21.conf:/etc/frr/frr.conf
+      exec:
+        - sleep 1 # wait for ovs to start
+        - ovs-vsctl add-port br-ovs eth-r11
+        - ovs-vsctl add-port br-ovs eth-r41
+    r31:
+      binds:
+        - ./configs/r31.conf:/etc/frr/frr.conf
+      exec:
+        - sleep 1 # wait for ovs to start
+        - ovs-vsctl add-port br-ovs eth-r11
+        - ovs-vsctl add-port br-ovs eth-r41
+    r41:
+      binds:
+        - ./configs/r41.conf:/etc/frr/frr.conf
+      exec:
+        - sleep 1 # wait for ovs to start
+        - ovs-vsctl add-port br-ovs eth-r21
+        - ovs-vsctl add-port br-ovs eth-r31
+        - ovs-vsctl add-port br-ovs eth-h4
+    h1:
+      exec:
+        - ip addr add 100.1.1.100/24 dev eth-r11
+        - ip route replace 0/0 via 100.1.1.1
+    h4:
+      exec:
+        - ip addr add 104.4.4.100/24 dev eth-r41
+        - ip route replace 0/0 via 104.4.4.1
+
+  links:
+    - endpoints: ["r11:eth-r21", "r21:eth-r11"]
+    - endpoints: ["r11:eth-r31", "r31:eth-r11"]
+    - endpoints: ["r21:eth-r41", "r41:eth-r21"]
+    - endpoints: ["r31:eth-r41", "r41:eth-r31"]
+    - endpoints: ["h1:eth-r11", "r11:eth-h1"]
+    - endpoints: ["h4:eth-r41", "r41:eth-h4"]
