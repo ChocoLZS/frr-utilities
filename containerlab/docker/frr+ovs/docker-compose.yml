@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ovs-frr
+    cap_add:
+      - SYS_NICE
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun
