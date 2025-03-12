@@ -10,9 +10,17 @@ topology:
     r1:
       binds:
         - ./configs/r1.conf:/etc/frr/frr.conf
+      exec:
+        - sleep 1 # wait for ovs to start
+        - ovs-vsctl add-port br-phy eth-r2
+        - ovs-vsctl add-port br-phy eth-h1
     r2:
       binds:
         - ./configs/r2.conf:/etc/frr/frr.conf
+      exec:
+        - sleep 1 # wait for ovs to start
+        - ovs-vsctl add-port br-phy eth-r1
+        - ovs-vsctl add-port br-phy eth-h2
     h1:
       exec:
         - ip addr add 101.1.1.100/24 dev eth-r1
