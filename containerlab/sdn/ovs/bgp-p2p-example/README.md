@@ -24,3 +24,5 @@
 将eth作为二层接口，add-port至ovs 网桥，通过ovs网桥来管理所有流量
 
 ovs-ofctl del-flows br-ovs，删除默认流表，可以发现r1-r2之间链路不通
+
+h1, h2 可以不加入ovs bridge

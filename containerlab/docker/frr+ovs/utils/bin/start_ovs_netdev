@@ -23,14 +23,14 @@ function fix_ovs_ctl {
 # See http://docs.openvswitch.org/en/latest/howto/userspace-tunneling/
 function add_br_ovs {
     log_info $CONTAINER_NAME "Creating OVS br-ovs bridge for netdev datapath type"
-    hwaddr=$(ip link show eth0 | grep link/ether | awk '{print $2}')
-    inet=$(ip addr show eth0 | grep "inet " | awk '{ print $2 }')
-    gw=$(ip route | grep default | awk '{ print $3 }')
+    # hwaddr=$(ip link show eth0 | grep link/ether | awk '{print $2}')
+    # inet=$(ip addr show eth0 | grep "inet " | awk '{ print $2 }')
+    # gw=$(ip route | grep default | awk '{ print $3 }')
     ovs-vsctl add-br br-ovs \
               -- set Bridge br-ovs datapath_type=netdev \
               -- br-set-external-id br-ovs bridge-id br-ovs \
               -- set bridge br-ovs fail-mode=standalone \
-              other_config:hwaddr="$hwaddr"
+              -- set bridge br-ovs other_config:hwaddr="$BR_OVS_MAC"
 
     # ovs-vsctl --timeout 10 add-port br-ovs eth0
     # ip addr add "$inet" dev br-ovsadd-br
@@ -45,12 +45,12 @@ function del_br_ovs {
     inet=$(ip addr show br-ovs | grep "inet " | awk '{ print $2 }')
     gw=$(ip route | grep default | awk '{ print $3 }')
     log_info $CONTAINER_NAME "Deleting OVS br-ovs bridge"
-    ovs-vsctl del-port br-ovs eth0
+    # ovs-vsctl del-port br-ovs eth0
     ovs-vsctl del-br br-ovs
-    ip addr add "$inet" dev eth0
-    ip link set eth0 up
-    ip route add default via "$gw" dev eth0
-    iptables -t raw -D PREROUTING -i eth0 -j DROP
+    # ip addr add "$inet" dev eth0
+    # ip link set eth0 up
+    # ip route add default via "$gw" dev eth0
+    # iptables -t raw -D PREROUTING -i eth0 -j DROP
 }
 
 function cleanup_ovs_run_files {
