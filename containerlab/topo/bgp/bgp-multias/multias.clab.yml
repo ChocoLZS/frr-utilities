@@ -3,7 +3,7 @@ name: multias
 topology:
   defaults:
     kind: linux
-    image: frr-alpine:latest
+    image: quay.io/frrouting/frr:10.2.1
     binds:
       - daemons:/etc/frr/daemons
   nodes:

@@ -16,7 +16,7 @@ topology:
         - sleep 1 # wait for ovs to start
         - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
         - ovs-vsctl add-port br-ovs eth-r2 -- set interface eth-r2 ofport_request=22
-        - ovs-vsctl add-port br-ovs eth-h1 -- set interface eth-h1 ofport_request=60001
+        # - ovs-vsctl add-port br-ovs eth-h1 -- set interface eth-h1 ofport_request=60001
     r2:
       binds:
         - ./configs/r2.conf:/etc/frr/frr.conf
@@ -26,15 +26,15 @@ topology:
         - sleep 1 # wait for ovs to start
         - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
         - ovs-vsctl add-port br-ovs eth-r1 -- set interface eth-r1 ofport_request=21
-        - ovs-vsctl add-port br-ovs eth-h2 -- set interface eth-h2 ofport_request=60002
-    h1:
-      exec:
-        - ip addr add 100.1.1.100/24 dev eth-r1
-        - ip route replace 0/0 via 100.1.1.1
-    h2:
-      exec:
-        - ip addr add 100.2.2.100/24 dev eth-r2
-        - ip route replace 0/0 via 100.2.2.1
+        # - ovs-vsctl add-port br-ovs eth-h2 -- set interface eth-h2 ofport_request=60002
+    # h1:
+    #   exec:
+    #     - ip addr add 100.1.1.100/24 dev eth-r1
+    #     - ip route replace 0/0 via 100.1.1.1
+    # h2:
+    #   exec:
+    #     - ip addr add 100.2.2.100/24 dev eth-r2
+    #     - ip route replace 0/0 via 100.2.2.1
 
   links:
     - type: veth
@@ -45,19 +45,19 @@ topology:
         - node: r2
           interface: eth-r1
           mac: 00:00:02:00:00:01
-    - type: veth
-      endpoints:
-        - node: r1
-          interface: eth-h1
-          mac: 00:00:01:00:ff:01
-        - node: h1
-          interface: eth-r1
-          mac: 00:ff:01:00:00:01
-    - type: veth
-      endpoints:
-        - node: r2
-          interface: eth-h2
-          mac: 00:00:02:00:ff:02
-        - node: h2
-          interface: eth-r2
-          mac: 00:ff:02:00:00:02
+    # - type: veth
+    #   endpoints:
+    #     - node: r1
+    #       interface: eth-h1
+    #       mac: 00:00:01:00:ff:01
+    #     - node: h1
+    #       interface: eth-r1
+    #       mac: 00:ff:01:00:00:01
+    # - type: veth
+    #   endpoints:
+    #     - node: r2
+    #       interface: eth-h2
+    #       mac: 00:00:02:00:ff:02
+    #     - node: h2
+    #       interface: eth-r2
+    #       mac: 00:ff:02:00:00:02

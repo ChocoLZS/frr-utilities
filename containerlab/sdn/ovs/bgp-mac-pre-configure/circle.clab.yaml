@@ -1,0 +1,94 @@
+name: mac
+
+topology:
+  defaults:
+    kind: linux
+    image: frr-ovs:latest
+    binds:
+      - daemons:/etc/frr/daemons
+  nodes:
+    r1:
+      binds:
+        - ./configs/r1.conf:/etc/frr/frr.conf
+      env:
+        BR_OVS_MAC: 00:00:00:00:00:11
+      exec:
+        - sleep 1 # wait for ovs to start
+        - ovs-vsctl set bridge br-ovs stp_enable=true
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl add-port br-ovs eth-r2 tag=200 -- set interface eth-r2 ofport_request=22
+        - ovs-vsctl add-port br-ovs eth-h1 tag=100 -- set interface eth-h1 ofport_request=601
+        - ovs-vsctl add-port br-ovs eth-r3 tag=100 -- set interface eth-r3 ofport_request=33
+    r2:
+      binds:
+        - ./configs/r2.conf:/etc/frr/frr.conf
+      env:
+        BR_OVS_MAC: 00:00:00:00:00:22
+      exec:
+        - sleep 1 # wait for ovs to start
+        - ovs-vsctl set bridge br-ovs stp_enable=true
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl add-port br-ovs eth-r1 -- set interface eth-r1 ofport_request=11
+        - ovs-vsctl add-port br-ovs eth-r3 -- set interface eth-r3 ofport_request=33
+    r3:
+      binds:
+        - ./configs/r3.conf:/etc/frr/frr.conf
+      env:
+        BR_OVS_MAC: 00:00:00:00:00:33
+      exec:
+        - sleep 1 # wait for ovs to start
+        - ovs-vsctl set bridge br-ovs stp_enable=true
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl add-port br-ovs eth-r2 -- set interface eth-r2 ofport_request=22
+        - ovs-vsctl add-port br-ovs eth-h3 -- set interface eth-h3 ofport_request=603
+        - ovs-vsctl add-port br-ovs eth-r1 -- set interface eth-r1 ofport_request=11
+    h1:
+      exec:
+        - ip addr add 100.1.1.100/24 dev eth-r1
+        - ip route replace 0/0 via 100.1.1.1
+    h3:
+      exec:
+        - ip addr add 100.3.3.100/24 dev eth-r3
+        - ip route replace 0/0 via 100.3.3.1
+
+  links:
+    - type: veth
+      endpoints:
+        - node: r1
+          interface: eth-r2
+          mac: 00:00:01:00:00:02
+        - node: r2
+          interface: eth-r1
+          mac: 00:00:02:00:00:01
+    - type: veth
+      endpoints:
+        - node: r2
+          interface: eth-r3
+          mac: 00:00:02:00:00:03
+        - node: r3
+          interface: eth-r2
+          mac: 00:00:03:00:00:02
+    - type: veth
+      endpoints:
+        - node: r1
+          interface: eth-h1
+          mac: 00:00:01:00:ff:01
+        - node: h1
+          interface: eth-r1
+          mac: 00:ff:01:00:00:01
+    - type: veth
+      endpoints:
+        - node: r3
+          interface: eth-h3
+          mac: 00:00:03:00:ff:03
+        - node: h3
+          interface: eth-r3
+          mac: 00:ff:03:00:00:03
+    - type: veth
+      endpoints:
+        - node: r1
+          interface: eth-r3
+          mac: 00:00:01:00:00:03
+        - node: r3
+          interface: eth-r1
+          mac: 00:00:03:00:00:01

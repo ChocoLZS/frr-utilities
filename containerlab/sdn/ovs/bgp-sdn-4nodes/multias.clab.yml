@@ -12,31 +12,39 @@ topology:
         - ./configs/r11.conf:/etc/frr/frr.conf
       exec:
         - sleep 1 # wait for ovs to start
-        - ovs-vsctl add-port br-ovs eth-r21
-        - ovs-vsctl add-port br-ovs eth-r31
-        - ovs-vsctl add-port br-ovs eth-h1
+        - ovs-vsctl set bridge br-ovs other_config:hwaddr=00:00:00:00:00:11
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl add-port br-ovs eth-r21 -- set interface eth-r21 ofport_request=21
+        - ovs-vsctl add-port br-ovs eth-r31 -- set interface eth-r31 ofport_request=31
+        - ovs-vsctl add-port br-ovs eth-h1 -- set interface eth-h1 ofport_request=60001
     r21:
       binds:
         - ./configs/r21.conf:/etc/frr/frr.conf
       exec:
         - sleep 1 # wait for ovs to start
-        - ovs-vsctl add-port br-ovs eth-r11
-        - ovs-vsctl add-port br-ovs eth-r41
+        - ovs-vsctl set bridge br-ovs other_config:hwaddr=00:00:00:00:00:21
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl add-port br-ovs eth-r11 -- set interface eth-r11 ofport_request=11
+        # - ovs-vsctl add-port br-ovs eth-r41 -- set interface eth-r41 ofport_request=41
     r31:
       binds:
         - ./configs/r31.conf:/etc/frr/frr.conf
       exec:
         - sleep 1 # wait for ovs to start
-        - ovs-vsctl add-port br-ovs eth-r11
-        - ovs-vsctl add-port br-ovs eth-r41
+        - ovs-vsctl set bridge br-ovs other_config:hwaddr=00:00:00:00:00:31
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl add-port br-ovs eth-r11 -- set interface eth-r11 ofport_request=11
+        - ovs-vsctl add-port br-ovs eth-r41 -- set interface eth-r41 ofport_request=41
     r41:
       binds:
         - ./configs/r41.conf:/etc/frr/frr.conf
       exec:
         - sleep 1 # wait for ovs to start
-        - ovs-vsctl add-port br-ovs eth-r21
-        - ovs-vsctl add-port br-ovs eth-r31
-        - ovs-vsctl add-port br-ovs eth-h4
+        - ovs-vsctl set bridge br-ovs other_config:hwaddr=00:00:00:00:00:41
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        # - ovs-vsctl add-port br-ovs eth-r21 -- set interface eth-r21 ofport_request=21
+        - ovs-vsctl add-port br-ovs eth-r31 -- set interface eth-r31 ofport_request=31
+        - ovs-vsctl add-port br-ovs eth-h4 -- set interface eth-h4 ofport_request=60004
     h1:
       exec:
         - ip addr add 100.1.1.100/24 dev eth-r11
@@ -47,9 +55,51 @@ topology:
         - ip route replace 0/0 via 104.4.4.1
 
   links:
-    - endpoints: ["r11:eth-r21", "r21:eth-r11"]
-    - endpoints: ["r11:eth-r31", "r31:eth-r11"]
-    - endpoints: ["r21:eth-r41", "r41:eth-r21"]
-    - endpoints: ["r31:eth-r41", "r41:eth-r31"]
-    - endpoints: ["h1:eth-r11", "r11:eth-h1"]
-    - endpoints: ["h4:eth-r41", "r41:eth-h4"]
+    - type: veth
+      endpoints:
+        - node: r11
+          interface: eth-r21
+          mac: 00:00:11:00:00:21
+        - node: r21
+          interface: eth-r11
+          mac: 00:00:21:00:00:11
+    - type: veth
+      endpoints:
+        - node: r11
+          interface: eth-r31
+          mac: 00:00:11:00:00:31
+        - node: r31
+          interface: eth-r11
+          mac: 00:00:31:00:00:11
+    - type: veth
+      endpoints:
+        - node: r21
+          interface: eth-r41
+          mac: 00:00:21:00:00:41
+        - node: r41
+          interface: eth-r21
+          mac: 00:00:41:00:00:21
+    - type: veth
+      endpoints:
+        - node: r31
+          interface: eth-r41
+          mac: 00:00:31:00:00:41
+        - node: r41
+          interface: eth-r31
+          mac: 00:00:41:00:00:31
+    - type: veth
+      endpoints:
+        - node: r11
+          interface: eth-h1
+          mac: 00:00:11:00:00:01
+        - node: h1
+          interface: eth-r11
+          mac: 00:00:01:00:00:11
+    - type: veth
+      endpoints:
+        - node: r41
+          interface: eth-h4
+          mac: 00:00:41:00:00:04
+        - node: h4
+          interface: eth-r41
+          mac: 00:00:04:00:00:41
