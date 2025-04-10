@@ -25,7 +25,7 @@ topology:
       exec:
         - sleep 1 # wait for ovs to start
         - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
-        - ovs-vsctl add-port br-ovs eth-r1 -- set interface eth-r1 ofport_request=21
+        - ovs-vsctl add-port br-ovs eth-r1 -- set interface eth-r1 ofport_request=11
         # - ovs-vsctl add-port br-ovs eth-h2 -- set interface eth-h2 ofport_request=60002
     # h1:
     #   exec:
