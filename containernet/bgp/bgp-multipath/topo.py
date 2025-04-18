@@ -7,6 +7,7 @@ from mininet.node import OVSKernelSwitch, RemoteController, Controller
 from mininet.cli import CLI
 from mininet.link import TCLink
 from mininet.log import info, setLogLevel
+from ryu.ofproto import ofproto_v1_3
 
 setLogLevel("info")
 
@@ -119,7 +120,7 @@ net.addLink(
     intfName2="eth-s11-r11",
     addr1="00:00:00:00:00:11",
     addr2="00:99:99:00:00:11",
-    port2=1,
+    port2=ofproto_v1_3.OFPP_LOCAL,
 )
 net.addLink(
     r12,
@@ -128,7 +129,7 @@ net.addLink(
     intfName2="eth-s12-r12",
     addr1="00:00:00:00:00:12",
     addr2="00:99:99:00:00:12",
-    port2=1,
+    port2=ofproto_v1_3.OFPP_LOCAL,
 )
 net.addLink(
     r21,
@@ -137,7 +138,7 @@ net.addLink(
     intfName2="eth-s21-r21",
     addr1="00:00:00:00:00:21",
     addr2="00:99:99:00:00:21",
-    port2=1,
+    port2=ofproto_v1_3.OFPP_LOCAL,
 )
 net.addLink(
     r22,
@@ -146,7 +147,7 @@ net.addLink(
     intfName2="eth-s22-r22",
     addr1="00:00:00:00:00:22",
     addr2="00:99:99:00:00:22",
-    port2=1,
+    port2=ofproto_v1_3.OFPP_LOCAL,
 )
 net.addLink(
     r23,
@@ -155,7 +156,7 @@ net.addLink(
     intfName2="eth-s23-r23",
     addr1="00:00:00:00:00:23",
     addr2="00:99:99:00:00:23",
-    port2=1,
+    port2=ofproto_v1_3.OFPP_LOCAL,
 )
 net.addLink(
     r31,
@@ -164,7 +165,7 @@ net.addLink(
     intfName2="eth-s31-r31",
     addr1="00:00:00:00:00:31",
     addr2="00:99:99:00:00:31",
-    port2=1,
+    port2=ofproto_v1_3.OFPP_LOCAL,
 )
 net.addLink(
     r32,
@@ -173,7 +174,7 @@ net.addLink(
     intfName2="eth-s32-r32",
     addr1="00:00:00:00:00:32",
     addr2="00:99:99:00:00:32",
-    port2=1,
+    port2=ofproto_v1_3.OFPP_LOCAL,
 )
 net.addLink(
     r33,
@@ -182,7 +183,7 @@ net.addLink(
     intfName2="eth-s33-r33",
     addr1="00:00:00:00:00:33",
     addr2="00:99:99:00:00:33",
-    port2=1,
+    port2=ofproto_v1_3.OFPP_LOCAL,
 )
 net.addLink(
     s11,
