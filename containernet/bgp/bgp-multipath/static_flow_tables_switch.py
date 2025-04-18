@@ -124,11 +124,6 @@ class SimpleSwitch13(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        # 1. ARP -> 控制器
-        match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_ARP)
-        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER)]
-        self.add_flow(datapath, 100, match, actions)
-
         # install table-miss flow entry
         #
         # We specify NO BUFFER to max_len of the output action due to
@@ -137,15 +132,18 @@ class SimpleSwitch13(app_manager.RyuApp):
         # truncated packet data. In that case, we cannot output packets
         # correctly.  The bug has been fixed in OVS v2.1.0.
 
+        """
+        默认丢包
+        阻止ovs接口产生的ipv6 mld、nd包
+        """
         match = parser.OFPMatch()
-        actions = [
-            parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)
-        ]
+        actions = []
         self.add_flow(datapath, 0, match, actions)
 
-        match_ipv6 = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IPV6)
-        # actions_ipv6 = [parser.OFPActionOutput(ofproto.OFPMBT_DROP)]
-        self.add_flow(datapath, 1, match_ipv6, actions=[])
+        # 1. ARP -> 控制器
+        match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_ARP)
+        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER)]
+        self.add_flow(datapath, 10, match, actions)
 
         """
         捕获所有tcp包，并发送至控制器
@@ -163,6 +161,12 @@ class SimpleSwitch13(app_manager.RyuApp):
         ]
         self.add_flow(datapath, 1, macth_tcp, actions_tcp)
 
+        # """
+        # drop ipv6 包
+        # """
+        # match_ipv6 = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IPV6)
+        # # actions_ipv6 = [parser.OFPActionOutput(ofproto.OFPMBT_DROP)]
+        # self.add_flow(datapath, 1, match_ipv6, actions=[])
         """
         给每个switch下发默认二层流表
         """

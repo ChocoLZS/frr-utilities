@@ -29,10 +29,6 @@ r11 = net.addDocker(
         f"{file_path}/configs/daemons:/etc/frr/daemons",
         f"{file_path}/configs/r11.conf:/etc/frr/frr.conf",
     ],
-    sysctls={
-        "net.ipv6.conf.all.disable_ipv6": 1,
-        "net.ipv6.conf.default.disable_ipv6": 1,
-    },
 )
 r12 = net.addDocker(
     "r12",
@@ -43,10 +39,6 @@ r12 = net.addDocker(
         f"{file_path}/configs/daemons:/etc/frr/daemons",
         f"{file_path}/configs/r12.conf:/etc/frr/frr.conf",
     ],
-    sysctls={
-        "net.ipv6.conf.all.disable_ipv6": 1,
-        "net.ipv6.conf.default.disable_ipv6": 1,
-    },
 )
 r21 = net.addDocker(
     "r21",
@@ -57,10 +49,6 @@ r21 = net.addDocker(
         f"{file_path}/configs/daemons:/etc/frr/daemons",
         f"{file_path}/configs/r21.conf:/etc/frr/frr.conf",
     ],
-    sysctls={
-        "net.ipv6.conf.all.disable_ipv6": 1,
-        "net.ipv6.conf.default.disable_ipv6": 1,
-    },
 )
 r22 = net.addDocker(
     "r22",
@@ -71,10 +59,6 @@ r22 = net.addDocker(
         f"{file_path}/configs/daemons:/etc/frr/daemons",
         f"{file_path}/configs/r22.conf:/etc/frr/frr.conf",
     ],
-    sysctls={
-        "net.ipv6.conf.all.disable_ipv6": 1,
-        "net.ipv6.conf.default.disable_ipv6": 1,
-    },
 )
 r23 = net.addDocker(
     "r23",
@@ -85,10 +69,6 @@ r23 = net.addDocker(
         f"{file_path}/configs/daemons:/etc/frr/daemons",
         f"{file_path}/configs/r23.conf:/etc/frr/frr.conf",
     ],
-    sysctls={
-        "net.ipv6.conf.all.disable_ipv6": 1,
-        "net.ipv6.conf.default.disable_ipv6": 1,
-    },
 )
 r31 = net.addDocker(
     "r31",
@@ -99,10 +79,6 @@ r31 = net.addDocker(
         f"{file_path}/configs/daemons:/etc/frr/daemons",
         f"{file_path}/configs/r31.conf:/etc/frr/frr.conf",
     ],
-    sysctls={
-        "net.ipv6.conf.all.disable_ipv6": 1,
-        "net.ipv6.conf.default.disable_ipv6": 1,
-    },
 )
 r32 = net.addDocker(
     "r32",
@@ -113,10 +89,6 @@ r32 = net.addDocker(
         f"{file_path}/configs/daemons:/etc/frr/daemons",
         f"{file_path}/configs/r32.conf:/etc/frr/frr.conf",
     ],
-    sysctls={
-        "net.ipv6.conf.all.disable_ipv6": 1,
-        "net.ipv6.conf.default.disable_ipv6": 1,
-    },
 )
 r33 = net.addDocker(
     "r33",
@@ -127,10 +99,6 @@ r33 = net.addDocker(
         f"{file_path}/configs/daemons:/etc/frr/daemons",
         f"{file_path}/configs/r33.conf:/etc/frr/frr.conf",
     ],
-    sysctls={
-        "net.ipv6.conf.all.disable_ipv6": 1,
-        "net.ipv6.conf.default.disable_ipv6": 1,
-    },
 )
 # h1 = net.addHost("h1", ip="100.1.1.100/24")
 # h3 = net.addHost("h3", ip="103.3.3.100/24")
