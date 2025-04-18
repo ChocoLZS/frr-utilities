@@ -30,8 +30,9 @@ function add_br_ovs {
               -- set Bridge br-ovs datapath_type=netdev \
               -- br-set-external-id br-ovs bridge-id br-ovs \
               -- set bridge br-ovs fail-mode=standalone \
-              -- set bridge br-ovs other_config:hwaddr="$BR_OVS_MAC"
-
+              -- set bridge br-ovs other_config:hwaddr="$BR_OVS_MAC" \
+    # 重要，禁用带内管理，启用带外管理，使得容器只知道br-ovs接口
+    ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true
     # ovs-vsctl --timeout 10 add-port br-ovs eth0
     # ip addr add "$inet" dev br-ovsadd-br
     ip link set br-ovs up
