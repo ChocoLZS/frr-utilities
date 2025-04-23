@@ -8,7 +8,11 @@ from mininet.cli import CLI
 from mininet.link import TCLink
 from mininet.log import info, setLogLevel
 
+from ryu.ofproto import ofproto_v1_3
+
 setLogLevel("info")
+
+LOCAL_PORT = 1
 
 import os
 
@@ -76,7 +80,7 @@ net.addLink(
     intfName2="eth-s1-r1",
     addr1="00:00:00:00:00:11",
     addr2="00:99:99:00:00:11",
-    port2=1,
+    port2=LOCAL_PORT,
 )
 net.addLink(
     r2,
@@ -85,7 +89,7 @@ net.addLink(
     intfName2="eth-s2-r2",
     addr1="00:00:00:00:00:22",
     addr2="00:99:99:00:00:22",
-    port2=1,
+    port2=LOCAL_PORT,
 )
 net.addLink(
     r3,
@@ -94,7 +98,7 @@ net.addLink(
     intfName2="eth-s3-r3",
     addr1="00:00:00:00:00:33",
     addr2="00:99:99:00:00:33",
-    port2=1,
+    port2=LOCAL_PORT,
 )
 net.addLink(
     s1,
@@ -106,8 +110,8 @@ net.addLink(
     intfName2="s2-eth-r1",
     port1=22,
     port2=11,
-    addr1="00:00:01:00:00:02",
-    addr2="00:00:02:00:00:01",
+    addr1="00:00:11:00:00:22",
+    addr2="00:00:22:00:00:11",
 )
 net.addLink(
     s2,
@@ -119,8 +123,8 @@ net.addLink(
     intfName2="s3-eth-r2",
     port1=33,
     port2=22,
-    addr1="00:00:02:00:00:03",
-    addr2="00:00:03:00:00:02",
+    addr1="00:00:22:00:00:33",
+    addr2="00:00:33:00:00:22",
 )
 net.addLink(
     s3,
@@ -132,8 +136,8 @@ net.addLink(
     intfName2="s1-eth-r3",
     port1=11,
     port2=33,
-    addr1="00:00:03:00:00:01",
-    addr2="00:00:01:00:00:03",
+    addr1="00:00:33:00:00:11",
+    addr2="00:00:11:00:00:33",
 )
 
 info("*** Starting network\n")

@@ -26,6 +26,8 @@ from ryu.lib.packet import tcp, packet_base
 
 TCP = tcp.tcp.__name__
 
+LOCAL_PORT = 1
+
 
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
@@ -37,40 +39,27 @@ class SimpleSwitch13(app_manager.RyuApp):
             0x11: {
                 "00:00:00:00:00:22": 22,
                 "00:00:00:00:00:33": 33,
-                "00:00:00:00:00:11": 9911,
+                "00:00:00:00:00:11": LOCAL_PORT,
             },
             0x22: {
                 "00:00:00:00:00:11": 11,
                 "00:00:00:00:00:33": 33,
-                "00:00:00:00:00:22": 9922,
+                "00:00:00:00:00:22": LOCAL_PORT,
             },
             0x33: {
                 "00:00:00:00:00:11": 11,
                 "00:00:00:00:00:22": 22,
-                "00:00:00:00:00:33": 9933,
+                "00:00:00:00:00:33": LOCAL_PORT,
             },
         }
         # 每一个交换机都有其邻居的arp表
-        self.arp_table = {
-            "1.1.1.1": "00:00:00:00:00:11",
-            "2.2.2.2": "00:00:00:00:00:22",
-            "3.3.3.3": "00:00:00:00:00:33",
-            "10.1.2.1": "00:00:00:00:00:11",
-            "10.1.2.2": "00:00:00:00:00:22",
-            "10.2.3.1": "00:00:00:00:00:22",
-            "10.2.3.2": "00:00:00:00:00:33",
-        }
+        self.arp_table = {}
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
-
-        # 1. ARP -> 控制器
-        match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_ARP)
-        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER)]
-        self.add_flow(datapath, 100, match, actions)
 
         # install table-miss flow entry
         #
@@ -80,15 +69,19 @@ class SimpleSwitch13(app_manager.RyuApp):
         # truncated packet data. In that case, we cannot output packets
         # correctly.  The bug has been fixed in OVS v2.1.0.
 
+        """
+        默认丢包
+        阻止ovs接口产生的ipv6 mld、nd包
+        如后续需要做ipv6的链路发现等处理，需要处理ipv6相关数据包
+        """
         match = parser.OFPMatch()
-        actions = [
-            parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)
-        ]
+        actions = []
         self.add_flow(datapath, 0, match, actions)
 
-        match_ipv6 = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IPV6)
-        # actions_ipv6 = [parser.OFPActionOutput(ofproto.OFPMBT_DROP)]
-        self.add_flow(datapath, 1, match_ipv6, actions=[])
+        # 1. ARP -> 控制器
+        match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_ARP)
+        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER)]
+        self.add_flow(datapath, 10, match, actions)
 
         """
         捕获所有tcp包，并发送至控制器
@@ -106,6 +99,12 @@ class SimpleSwitch13(app_manager.RyuApp):
         ]
         self.add_flow(datapath, 1, macth_tcp, actions_tcp)
 
+        # """
+        # drop ipv6 包
+        # """
+        # match_ipv6 = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IPV6)
+        # # actions_ipv6 = [parser.OFPActionOutput(ofproto.OFPMBT_DROP)]
+        # self.add_flow(datapath, 1, match_ipv6, actions=[])
         """
         给每个switch下发默认二层流表
         """
@@ -140,6 +139,13 @@ class SimpleSwitch13(app_manager.RyuApp):
             )
         datapath.send_msg(mod)
 
+    def _extract_ev(self, ev):
+        msg = ev.msg
+        datapath = msg.datapath
+        in_port = msg.match["in_port"]
+        pkt = packet.Packet(msg.data)
+        return msg, datapath, in_port, pkt
+
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
         # If you hit this you might want to increase
@@ -151,13 +157,9 @@ class SimpleSwitch13(app_manager.RyuApp):
                 ev.msg.msg_len,
                 ev.msg.total_len,
             )
-        msg = ev.msg
-        datapath = msg.datapath
+        msg, datapath, in_port, pkt = self._extract_ev(ev)
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
-        in_port = msg.match["in_port"]
-
-        pkt = packet.Packet(msg.data)
 
         header_list = dict(
             (p.protocol_name, p)
@@ -180,19 +182,14 @@ class SimpleSwitch13(app_manager.RyuApp):
         dst = eth.dst
         src = eth.src
         dpid = datapath.id
+        data = None
+        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
+            data = msg.data
         # ARP 处理：控制器代理回复
         if eth.ethertype == ether_types.ETH_TYPE_ARP:
-            arp_pkt = pkt.get_protocol(arp.arp)
-            src_ip = arp_pkt.src_ip
-            dst_ip = arp_pkt.dst_ip
-            print(f"[ARP] [{hex(dpid)}] Received ARP packet from {src_ip} to {dst_ip}")
-
-            if arp_pkt.opcode == arp.ARP_REQUEST:
-                if dst_ip in self.arp_table:
-                    dst_mac = self.arp_table[dst_ip]
-                    print(f"[ARP] Replying: {dst_ip} is at {dst_mac}")
-                    self.send_arp_reply(datapath, src, src_ip, dst_mac, dst_ip, in_port)
-                    return
+            is_handled = self._handle_arp(ev)
+            if is_handled:
+                return
 
         # 广播包（一般是 ARP 请求)
         if dst == "ff:ff:ff:ff:ff:ff":
@@ -206,10 +203,6 @@ class SimpleSwitch13(app_manager.RyuApp):
             out_port = self.mac_to_port[dpid][dst]
             actions = [parser.OFPActionOutput(out_port)]
 
-        data = None
-        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
-            data = msg.data
-
         out = parser.OFPPacketOut(
             datapath=datapath,
             buffer_id=msg.buffer_id,
@@ -219,8 +212,73 @@ class SimpleSwitch13(app_manager.RyuApp):
         )
         datapath.send_msg(out)
 
-    def _handle_arp():
-        pass
+    def _handle_arp(self, ev) -> bool:
+        msg, datapath, in_port, pkt = self._extract_ev(ev)
+        dpid = datapath.id
+        parser = datapath.ofproto_parser
+        ofproto = datapath.ofproto
+        eth = pkt.get_protocols(ethernet.ethernet)[0]
+        src = eth.src
+        dst = eth.dst
+        arp_pkt = pkt.get_protocol(arp.arp)
+        src_ip = arp_pkt.src_ip
+        dst_ip = arp_pkt.dst_ip
+        print(
+            f"[ARP] [{hex(dpid)}] Received ARP packet from {src_ip} to {dst_ip}, port: {in_port}"
+        )
+        data = None
+        if msg.buffer_id == datapath.ofproto.OFP_NO_BUFFER:
+            data = msg.data
+        # 学习发送方 IP 对应的 MAC 地址
+        self.arp_table[src_ip] = src
+        print(f"[ARP] Learning: {src_ip} is at {src}")
+        if arp_pkt.opcode == arp.ARP_REQUEST:
+            if dst_ip in self.arp_table:
+                dst_mac = self.arp_table[dst_ip]
+                print(f"[ARP] [{hex(dpid)}] Replying: {dst_ip} is at {dst_mac}")
+                self.send_arp_reply(datapath, src, src_ip, dst_mac, dst_ip, in_port)
+                return True
+            else:
+                # flood to neighbor
+                print(f"[ARP] [{hex(dpid)}] Flooding: {dst_ip} is not in ARP table")
+                # 如果是主机的请求，并且没命中arp table，向邻居一跳节点泛洪
+                if in_port == LOCAL_PORT:
+                    # flood to all neighbors except in_port
+                    print(
+                        f"[ARP] [{hex(dpid)}] Flooding to all neighbors except {in_port}"
+                    )
+                    out_port = ofproto.OFPP_FLOOD
+                    actions = [parser.OFPActionOutput(out_port)]
+                    out = parser.OFPPacketOut(
+                        datapath=datapath,
+                        buffer_id=msg.buffer_id,
+                        in_port=in_port,
+                        actions=actions,
+                        data=data,
+                    )
+                    datapath.send_msg(out)
+                    return True
+                # 如果不是主机的请求，说明来自邻居节点，往主机发送即可
+                else:
+                    print(
+                        f"[ARP] [{hex(dpid)}] Received ARP request from {in_port}, send to host"
+                    )
+                    # send to host
+                    out_port = LOCAL_PORT
+                    actions = [parser.OFPActionOutput(out_port)]
+                    out = parser.OFPPacketOut(
+                        datapath=datapath,
+                        buffer_id=msg.buffer_id,
+                        in_port=in_port,
+                        actions=actions,
+                        data=data,
+                    )
+                    datapath.send_msg(out)
+                    return True
+        if arp_pkt.opcode == arp.ARP_REPLY:
+            print(f"[ARP] [{hex(dpid)}] Received ARP reply from {src_ip} to {dst_ip}")
+            pass
+        return True
 
     def send_arp_reply(
         self, datapath, target_mac, target_ip, src_mac, src_ip, out_port
