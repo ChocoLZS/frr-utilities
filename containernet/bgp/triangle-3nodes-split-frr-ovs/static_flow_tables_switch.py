@@ -21,13 +21,14 @@ from ryu.ofproto import ofproto_v1_3, inet
 from ryu.lib.packet import packet, ethernet, arp, tcp
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
+from ryu.topology import event
 
 from ryu.lib.packet import tcp, packet_base
 
 TCP = tcp.tcp.__name__
 
 LOCAL_PORT = ofproto_v1_3.OFPP_LOCAL
-LOCAL_PORT = 1
+# LOCAL_PORT = 1
 
 
 class SimpleSwitch13(app_manager.RyuApp):
@@ -37,88 +38,31 @@ class SimpleSwitch13(app_manager.RyuApp):
         super(SimpleSwitch13, self).__init__(*args, **kwargs)
         # 提前记录交换机的邻居arp表
         self.mac_to_port = {
-            # 0x11: {
-            #     "00:00:00:00:00:12": 12,
-            #     "00:00:00:00:00:11": LOCAL_PORT,
-            # },
-            # 0x12: {
-            #     "00:00:00:00:00:11": 11,
-            #     "00:00:00:00:00:12": LOCAL_PORT,
-            #     "00:00:00:00:00:21": 21,
-            #     "00:00:00:00:00:22": 22,
-            # },
-            # 0x21: {
-            #     "00:00:00:00:00:12": 12,
-            #     "00:00:00:00:00:23": 23,
-            #     "00:00:00:00:00:21": LOCAL_PORT,
-            # },
-            # 0x22: {
-            #     "00:00:00:00:00:12": 12,
-            #     "00:00:00:00:00:23": 23,
-            #     "00:00:00:00:00:22": LOCAL_PORT,
-            # },
-            # 0x23: {
-            #     "00:00:00:00:00:21": 21,
-            #     "00:00:00:00:00:22": 22,
-            #     "00:00:00:00:00:23": LOCAL_PORT,
-            #     "00:00:00:00:00:31": 31,
-            #     "00:00:00:00:00:32": 32,
-            # },
-            # 0x31: {
-            #     "00:00:00:00:00:23": 23,
-            #     "00:00:00:00:00:33": 33,
-            #     "00:00:00:00:00:31": LOCAL_PORT,
-            # },
-            # 0x32: {
-            #     "00:00:00:00:00:23": 23,
-            #     "00:00:00:00:00:33": 33,
-            #     "00:00:00:00:00:32": LOCAL_PORT,
-            # },
-            # 0x33: {
-            #     "00:00:00:00:00:31": 31,
-            #     "00:00:00:00:00:32": 32,
-            #     "00:00:00:00:00:33": LOCAL_PORT,
-            # },
+            0x11: {
+                "00:00:00:00:00:22": 22,
+                "00:00:00:00:00:33": 33,
+                "00:00:00:00:00:11": LOCAL_PORT,
+            },
+            0x22: {
+                "00:00:00:00:00:11": 11,
+                "00:00:00:00:00:33": 33,
+                "00:00:00:00:00:22": LOCAL_PORT,
+            },
+            0x33: {
+                "00:00:00:00:00:11": 11,
+                "00:00:00:00:00:22": 22,
+                "00:00:00:00:00:33": LOCAL_PORT,
+            },
         }
         # 每一个交换机都有其邻居的arp表
         self.arp_table = {
-            # "1.0.1.1": "00:00:00:00:00:11",
-            # "1.0.1.2": "00:00:00:00:00:12",
-            # "2.0.2.1": "00:00:00:00:00:21",
-            # "2.0.2.2": "00:00:00:00:00:22",
-            # "2.0.2.3": "00:00:00:00:00:23",
-            # "3.0.3.1": "00:00:00:00:00:31",
-            # "3.0.3.2": "00:00:00:00:00:32",
-            # "3.0.3.3": "00:00:00:00:00:33",
-            # # r11
-            # "10.11.12.1": "00:00:00:00:00:11",
-            # # r12
-            # "10.11.12.2": "00:00:00:00:00:12",
-            # "10.12.21.1": "00:00:00:00:00:12",
-            # "10.12.22.1": "00:00:00:00:00:12",
-            # # r21
-            # "10.12.21.2": "00:00:00:00:00:21",
-            # "10.21.23.1": "00:00:00:00:00:21",
-            # # r22
-            # "10.12.22.2": "00:00:00:00:00:22",
-            # "10.22.23.1": "00:00:00:00:00:22",
-            # # r23
-            # "10.21.23.2": "00:00:00:00:00:23",
-            # "10.22.23.2": "00:00:00:00:00:23",
-            # "10.23.31.1": "00:00:00:00:00:23",
-            # "10.23.32.1": "00:00:00:00:00:23",
-            # # r31
-            # "10.23.31.2": "00:00:00:00:00:31",
-            # "10.31.33.1": "00:00:00:00:00:31",
-            # # r32
-            # "10.23.32.2": "00:00:00:00:00:32",
-            # "10.32.33.1": "00:00:00:00:00:32",
-            # # r33
-            # "10.31.33.2": "00:00:00:00:00:33",
-            # "10.32.33.2": "00:00:00:00:00:33",
-            # # host
-            # "101.1.1.1": "00:00:00:00:00:11",
-            # "103.3.3.1": "00:00:00:00:00:33",
+            "1.1.1.1": "00:00:00:00:00:11",
+            "2.2.2.2": "00:00:00:00:00:22",
+            "3.3.3.3": "00:00:00:00:00:33",
+            "10.1.2.1": "00:00:00:00:00:11",
+            "10.1.2.2": "00:00:00:00:00:22",
+            "10.2.3.1": "00:00:00:00:00:22",
+            "10.2.3.2": "00:00:00:00:00:33",
         }
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
@@ -135,10 +79,58 @@ class SimpleSwitch13(app_manager.RyuApp):
         # truncated packet data. In that case, we cannot output packets
         # correctly.  The bug has been fixed in OVS v2.1.0.
 
+        """
+        默认丢包
+        阻止ovs接口产生的ipv6 mld、nd包
+        如后续需要做ipv6的链路发现等处理，需要处理ipv6相关数据包
+        """
+        match = parser.OFPMatch()
+        actions = []
+        self.add_flow(datapath, 0, match, actions)
+
         # 1. ARP -> 控制器
         match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_ARP)
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER)]
-        self.add_flow(datapath, 10, match, actions)
+        self.add_flow(datapath, 20, match, actions)
+
+        """
+        捕获所有tcp包，并发送至控制器
+        """
+        macth_tcp = parser.OFPMatch(
+            eth_type=ether_types.ETH_TYPE_IP, ip_proto=inet.IPPROTO_TCP
+        )
+        """
+        1. OFPP_NORMAL: 发送至交换机的正常处理流程
+        2. OFPP_CONTROLLER: 发送至控制器（而且控制器只分析，并不处理）
+        """
+        actions_tcp = [
+            parser.OFPActionOutput(ofproto.OFPP_NORMAL, ofproto.OFPCML_NO_BUFFER),
+            parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER),
+        ]
+        self.add_flow(datapath, 1, macth_tcp, actions_tcp)
+
+        # """
+        # drop ipv6 包
+        # """
+        # match_ipv6 = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IPV6)
+        # # actions_ipv6 = [parser.OFPActionOutput(ofproto.OFPMBT_DROP)]
+        # self.add_flow(datapath, 1, match_ipv6, actions=[])
+        """
+        给每个switch下发默认二层流表
+        """
+        dpid = datapath.id
+        for mac, out_port in self.mac_to_port[dpid].items():
+            """
+            复制一份至控制器
+            """
+            actions = [
+                parser.OFPActionOutput(out_port),
+                # parser.OFPActionOutput(ofproto.OFPP_CONTROLLER),
+            ]
+            match = parser.OFPMatch(eth_dst=mac)
+            self.add_flow(datapath, 10, match, actions)
+            if out_port == LOCAL_PORT:
+                actions = []
 
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
@@ -159,6 +151,17 @@ class SimpleSwitch13(app_manager.RyuApp):
             )
         datapath.send_msg(mod)
 
+    @set_ev_cls(event.EventLinkAdd)
+    def link_add_handler(self, ev):
+        # 记录交换机间链路（有向边）
+        print(f"[TOPO] Link added: {ev})")
+
+    @set_ev_cls(event.EventHostAdd)
+    def host_add_handler(self, ev):
+        # 记录host信息（新host上线）
+
+        print(f"[TOPO] Host {ev}")
+
     def _extract_ev(self, ev):
         msg = ev.msg
         datapath = msg.datapath
@@ -171,6 +174,7 @@ class SimpleSwitch13(app_manager.RyuApp):
         # If you hit this you might want to increase
         # the "miss_send_length" of your switch
         print("--------------------------")
+        print(ev.timestamp)
         if ev.msg.msg_len < ev.msg.total_len:
             self.logger.debug(
                 "packet truncated: only %s of %s bytes",
@@ -246,23 +250,9 @@ class SimpleSwitch13(app_manager.RyuApp):
         print(
             f"[ARP] [{hex(dpid)}] Received ARP packet from {src_ip} to {dst_ip}, port: {in_port}"
         )
-        print(f"[ARP] arp table: {self.arp_table}")
         data = None
         if msg.buffer_id == datapath.ofproto.OFP_NO_BUFFER:
             data = msg.data
-        if dpid not in self.mac_to_port:
-            self.mac_to_port[dpid] = {}
-        if src not in self.mac_to_port[dpid]:
-            self.mac_to_port[dpid][src] = in_port
-            self.add_flow(
-                datapath,
-                10,
-                parser.OFPMatch(eth_dst=src),
-                [parser.OFPActionOutput(in_port)],
-            )
-            print(
-                f"[MAC] [{hex(dpid)}] Learning: {src} is at {in_port}: {self.mac_to_port}"
-            )
         # 学习发送方 IP 对应的 MAC 地址
         self.arp_table[src_ip] = src
         print(f"[ARP] Learning: {src_ip} is at {src}")
@@ -310,12 +300,9 @@ class SimpleSwitch13(app_manager.RyuApp):
                     datapath.send_msg(out)
                     return True
         if arp_pkt.opcode == arp.ARP_REPLY:
-            print(
-                f"[ARP] [{hex(dpid)}] Received ARP reply from {src_ip} to {dst_ip}, port: {in_port}, handle arp reply."
-            )
-            self.send_arp_reply(datapath, src, src_ip, dst, dst_ip, in_port)
-            return True
-        return False
+            print(f"[ARP] [{hex(dpid)}] Received ARP reply from {src_ip} to {dst_ip}")
+            pass
+        return True
 
     def send_arp_reply(
         self, datapath, target_mac, target_ip, src_mac, src_ip, out_port
