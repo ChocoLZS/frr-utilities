@@ -121,14 +121,14 @@ topology:
         - ovs-vsctl add-port br-ovs eth-r31 -- set interface eth-r31 ofport_request=31
         - ovs-vsctl add-port br-ovs eth-r32 -- set interface eth-r32 ofport_request=32
         - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
-    # h1:
-    #   exec:
-    #     - ip addr add 100.1.1.100/24 dev eth-r11
-    #     - ip route replace 0/0 via 100.1.1.1
-    # h3:
-    #   exec:
-    #     - ip addr add 103.3.3.100/24 dev eth-r33
-    #     - ip route replace 0/0 via 103.3.3.1
+    h1:
+      exec:
+        - ip addr add 100.1.1.100/24 dev eth-r11
+        - ip route replace 0/0 via 100.1.1.1
+    h3:
+      exec:
+        - ip addr add 103.3.3.100/24 dev eth-r33
+        - ip route replace 0/0 via 103.3.3.1
 
   links:
     - type: veth
@@ -267,3 +267,5 @@ topology:
         - node: s33
           interface: eth-host
           mac: 00:00:cc:00:00:33
+    - endpoints: ['r11:eth-cloud', 'h1:eth-r11']
+    - endpoints: ['r33:eth-cloud', 'h3:eth-r33']
