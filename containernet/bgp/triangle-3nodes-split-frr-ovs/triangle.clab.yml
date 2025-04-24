@@ -6,41 +6,46 @@ topology:
     image: frr-ovs:latest
     binds:
       - ./configs/daemons:/etc/frr/daemons
-      - ./tcpdump:/tmp/tcpdump
   nodes:
     r11:
       binds:
         - ./configs/r1.conf:/etc/frr/frr.conf
+    s11:
+      image: ovs-alpine:latest
       env:
-        BR_OVS_MAC: 00:00:00:00:00:11
+        BR_OVS_MAC: 00:00:ff:00:00:11
       exec:
         - sleep 1
-        - bash /usr/local/bin/tcpdump.sh
         - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r11"
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
         - ovs-vsctl add-port br-ovs eth-r12 -- set interface eth-r12 ofport_request=22
         - ovs-vsctl add-port br-ovs eth-r13 -- set interface eth-r13 ofport_request=33
         - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
     r22:
       binds:
         - ./configs/r2.conf:/etc/frr/frr.conf
+    s22:
+      image: ovs-alpine:latest
       env:
-        BR_OVS_MAC: 00:00:00:00:00:22
+        BR_OVS_MAC: 00:00:ff:00:00:22
       exec:
         - sleep 1
-        - bash /usr/local/bin/tcpdump.sh
         - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r22"
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
         - ovs-vsctl add-port br-ovs eth-r21 -- set interface eth-r21 ofport_request=11
         - ovs-vsctl add-port br-ovs eth-r23 -- set interface eth-r23 ofport_request=33
         - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
     r33:
       binds:
         - ./configs/r3.conf:/etc/frr/frr.conf
+    s33:
+      image: ovs-alpine:latest
       env:
-        BR_OVS_MAC: 00:00:00:00:00:33
+        BR_OVS_MAC: 00:00:ff:00:00:33
       exec:
         - sleep 1
-        - bash /usr/local/bin/tcpdump.sh
         - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r33"
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
         - ovs-vsctl add-port br-ovs eth-r31 -- set interface eth-r31 ofport_request=11
         - ovs-vsctl add-port br-ovs eth-r32 -- set interface eth-r32 ofport_request=22
         - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
@@ -50,24 +55,48 @@ topology:
     - type: veth
       endpoints:
         - node: r11
+          interface: br-ovs
+          mac: 00:00:00:00:00:11
+        - node: s11
+          interface: eth-host
+          mac: 00:00:cc:00:00:11
+    - type: veth
+      endpoints:
+        - node: r22
+          interface: br-ovs
+          mac: 00:00:00:00:00:22
+        - node: s22
+          interface: eth-host
+          mac: 00:00:cc:00:00:22
+    - type: veth
+      endpoints:
+        - node: r33
+          interface: br-ovs
+          mac: 00:00:00:00:00:33
+        - node: s33
+          interface: eth-host
+          mac: 00:00:cc:00:00:33
+    - type: veth
+      endpoints:
+        - node: s11
           interface: eth-r12
           mac: 00:00:11:00:00:22
-        - node: r22
+        - node: s22
           interface: eth-r21
           mac: 00:00:22:00:00:11
     - type: veth
       endpoints:
-        - node: r11
+        - node: s11
           interface: eth-r13
           mac: 00:00:11:00:00:33
-        - node: r33
+        - node: s33
           interface: eth-r31
           mac: 00:00:33:00:00:11
-    # - type: veth
-    #   endpoints:
-    #     - node: r22
-    #       interface: eth-r23
-    #       mac: 00:00:22:00:00:33
-    #     - node: r33
-    #       interface: eth-r32
-    #       mac: 00:00:33:00:00:22
+    - type: veth
+      endpoints:
+        - node: s22
+          interface: eth-r23
+          mac: 00:00:22:00:00:33
+        - node: s33
+          interface: eth-r32
+          mac: 00:00:33:00:00:22

@@ -1,0 +1,33 @@
+#!/bin/bash
+set -eo pipefail
+
+# 定义清理函数
+function cleanup {
+    echo "Stopping all processes..."
+    # 停止 start_ovs_netdev 的循环（通过发送信号）
+    if [ -n "$SLEEP_PID" ]; then
+        kill -TERM "$SLEEP_PID" >/dev/null 2>&1 || true
+    fi
+    # 停止 OVS（如果已启动）
+    if [ -f "$OVS_RUN_DIR/ovs-vswitchd.pid" ]; then
+        /usr/share/openvswitch/scripts/ovs-ctl stop
+    fi
+}
+
+# 注册清理函数，捕获退出信号
+trap cleanup TERM INT QUIT
+
+# 启动 OVS 网络配置（原脚本逻辑）
+# 注意：原脚本中的循环会被放到后台运行
+start_ovs_netdev > /tmp/ovs-deamon.log &
+OVS_PID=$!
+
+# 等待任一进程退出（避免容器直接退出）
+wait $OVS_PID
+
+# 执行清理操作
+cleanup
+
+# 等待所有子进程退出
+wait
+exit 0

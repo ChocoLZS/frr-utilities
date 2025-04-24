@@ -1,0 +1,269 @@
+name: bgp
+
+topology:
+  defaults:
+    kind: linux
+    image: frr-ovs:latest
+    binds:
+      - ./configs/daemons:/etc/frr/daemons
+  nodes:
+    r11:
+      binds:
+        - ./configs/r11.conf:/etc/frr/frr.conf
+    s11:
+      image: ovs-alpine:latest
+      env:
+        BR_OVS_MAC: 00:00:ff:00:00:11
+      exec:
+        - sleep 1
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r11"
+        - ovs-vsctl add-port br-ovs eth-r12 -- set interface eth-r12 ofport_request=12
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
+    r12:
+      binds:
+        - ./configs/r12.conf:/etc/frr/frr.conf
+    s12:
+      image: ovs-alpine:latest
+      env:
+        BR_OVS_MAC: 00:00:ff:00:00:12
+      exec:
+        - sleep 1
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r12"
+        - ovs-vsctl add-port br-ovs eth-r11 -- set interface eth-r11 ofport_request=11
+        - ovs-vsctl add-port br-ovs eth-r21 -- set interface eth-r21 ofport_request=21
+        - ovs-vsctl add-port br-ovs eth-r22 -- set interface eth-r22 ofport_request=22
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
+    r21:
+      binds:
+        - ./configs/r21.conf:/etc/frr/frr.conf
+    s21:
+      image: ovs-alpine:latest
+      env:
+        BR_OVS_MAC: 00:00:ff:00:00:21
+      exec:
+        - sleep 1
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r21"
+        - ovs-vsctl add-port br-ovs eth-r12 -- set interface eth-r12 ofport_request=12
+        - ovs-vsctl add-port br-ovs eth-r23 -- set interface eth-r23 ofport_request=23
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
+    r22:
+      binds:
+        - ./configs/r22.conf:/etc/frr/frr.conf
+    s22:
+      image: ovs-alpine:latest
+      env:
+        BR_OVS_MAC: 00:00:ff:00:00:22
+      exec:
+        - sleep 1
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r22"
+        - ovs-vsctl add-port br-ovs eth-r12 -- set interface eth-r12 ofport_request=12
+        - ovs-vsctl add-port br-ovs eth-r23 -- set interface eth-r23 ofport_request=23
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
+    r23:
+      binds:
+        - ./configs/r23.conf:/etc/frr/frr.conf
+    s23:
+      image: ovs-alpine:latest
+      env:
+        BR_OVS_MAC: 00:00:ff:00:00:23
+      exec:
+        - sleep 1
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r23"
+        - ovs-vsctl add-port br-ovs eth-r21 -- set interface eth-r21 ofport_request=21
+        - ovs-vsctl add-port br-ovs eth-r22 -- set interface eth-r22 ofport_request=22
+        - ovs-vsctl add-port br-ovs eth-r31 -- set interface eth-r31 ofport_request=31
+        - ovs-vsctl add-port br-ovs eth-r32 -- set interface eth-r32 ofport_request=32
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
+    r31:
+      binds:
+        - ./configs/r31.conf:/etc/frr/frr.conf
+    s31:
+      image: ovs-alpine:latest
+      env:
+        BR_OVS_MAC: 00:00:ff:00:00:31
+      exec:
+        - sleep 1
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r31"
+        - ovs-vsctl add-port br-ovs eth-r23 -- set interface eth-r23 ofport_request=23
+        - ovs-vsctl add-port br-ovs eth-r33 -- set interface eth-r33 ofport_request=33
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
+    r32:
+      binds:
+        - ./configs/r32.conf:/etc/frr/frr.conf
+    s32:
+      image: ovs-alpine:latest
+      env:
+        BR_OVS_MAC: 00:00:ff:00:00:32
+      exec:
+        - sleep 1
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r32"
+        - ovs-vsctl add-port br-ovs eth-r23 -- set interface eth-r23 ofport_request=23
+        - ovs-vsctl add-port br-ovs eth-r33 -- set interface eth-r33 ofport_request=33
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
+    r33:
+      binds:
+        - ./configs/r33.conf:/etc/frr/frr.conf
+    s33:
+      image: ovs-alpine:latest
+      env:
+        BR_OVS_MAC: 00:00:00:00:00:33
+      exec:
+        - sleep 1
+        - ovs-vsctl set-controller br-ovs tcp:192.168.114.135:6653
+        - ovs-vsctl -- set bridge br-ovs other-config:disable-in-band=true other-config:dp-desc="r33"
+        - ovs-vsctl add-port br-ovs eth-r31 -- set interface eth-r31 ofport_request=31
+        - ovs-vsctl add-port br-ovs eth-r32 -- set interface eth-r32 ofport_request=32
+        - ovs-vsctl add-port br-ovs eth-host -- set interface eth-host ofport_request=1
+    # h1:
+    #   exec:
+    #     - ip addr add 100.1.1.100/24 dev eth-r11
+    #     - ip route replace 0/0 via 100.1.1.1
+    # h3:
+    #   exec:
+    #     - ip addr add 103.3.3.100/24 dev eth-r33
+    #     - ip route replace 0/0 via 103.3.3.1
+
+  links:
+    - type: veth
+      endpoints:
+        - node: s11
+          interface: eth-r12
+          mac: 00:00:11:00:00:12
+        - node: s12
+          interface: eth-r11
+          mac: 00:00:12:00:00:11
+    - type: veth
+      endpoints:
+        - node: s12
+          interface: eth-r21
+          mac: 00:00:12:00:00:21
+        - node: s21
+          interface: eth-r12
+          mac: 00:00:21:00:00:12
+    - type: veth
+      endpoints:
+        - node: s12
+          interface: eth-r22
+          mac: 00:00:12:00:00:22
+        - node: s22
+          interface: eth-r12
+          mac: 00:00:22:00:00:12
+    - type: veth
+      endpoints:
+        - node: s21
+          interface: eth-r23
+          mac: 00:00:21:00:00:23
+        - node: s23
+          interface: eth-r21
+          mac: 00:00:23:00:00:21
+    - type: veth
+      endpoints:
+        - node: s22
+          interface: eth-r23
+          mac: 00:00:22:00:00:23
+        - node: s23
+          interface: eth-r22
+          mac: 00:00:23:00:00:22
+    - type: veth
+      endpoints:
+        - node: s23
+          interface: eth-r31
+          mac: 00:00:23:00:00:31
+        - node: s31
+          interface: eth-r23
+          mac: 00:00:31:00:00:23
+    - type: veth
+      endpoints:
+        - node: s23
+          interface: eth-r32
+          mac: 00:00:23:00:00:32
+        - node: s32
+          interface: eth-r23
+          mac: 00:00:32:00:00:23
+    - type: veth
+      endpoints:
+        - node: s31
+          interface: eth-r33
+          mac: 00:00:31:00:00:33
+        - node: s33
+          interface: eth-r31
+          mac: 00:00:33:00:00:31
+    - type: veth
+      endpoints:
+        - node: s32
+          interface: eth-r33
+          mac: 00:00:32:00:00:33
+        - node: s33
+          interface: eth-r32
+          mac: 00:00:33:00:00:32
+    - type: veth
+      endpoints:
+        - node: r11
+          interface: br-ovs
+          mac: 00:00:00:00:00:11
+        - node: s11
+          interface: eth-host
+          mac: 00:00:cc:00:00:11
+    - type: veth
+      endpoints:
+        - node: r12
+          interface: br-ovs
+          mac: 00:00:00:00:00:12
+        - node: s12
+          interface: eth-host
+          mac: 00:00:cc:00:00:12
+    - type: veth
+      endpoints:
+        - node: r21
+          interface: br-ovs
+          mac: 00:00:00:00:00:21
+        - node: s21
+          interface: eth-host
+          mac: 00:00:cc:00:00:21
+    - type: veth
+      endpoints:
+        - node: r22
+          interface: br-ovs
+          mac: 00:00:00:00:00:22
+        - node: s22
+          interface: eth-host
+          mac: 00:00:cc:00:00:22
+    - type: veth
+      endpoints:
+        - node: r23
+          interface: br-ovs
+          mac: 00:00:00:00:00:23
+        - node: s23
+          interface: eth-host
+          mac: 00:00:cc:00:00:23
+    - type: veth
+      endpoints:
+        - node: r31
+          interface: br-ovs
+          mac: 00:00:00:00:00:31
+        - node: s31
+          interface: eth-host
+          mac: 00:00:cc:00:00:31
+    - type: veth
+      endpoints:
+        - node: r32
+          interface: br-ovs
+          mac: 00:00:00:00:00:32
+        - node: s32
+          interface: eth-host
+          mac: 00:00:cc:00:00:32
+    - type: veth
+      endpoints:
+        - node: r33
+          interface: br-ovs
+          mac: 00:00:00:00:00:33
+        - node: s33
+          interface: eth-host
+          mac: 00:00:cc:00:00:33

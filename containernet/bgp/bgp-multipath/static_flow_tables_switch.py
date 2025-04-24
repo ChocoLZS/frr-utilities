@@ -26,6 +26,9 @@ from ryu.lib.packet import tcp, packet_base
 
 TCP = tcp.tcp.__name__
 
+LOCAL_PORT = ofproto_v1_3.OFPP_LOCAL
+# LOCAL_PORT = 1
+
 
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
@@ -36,45 +39,45 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.mac_to_port = {
             0x11: {
                 "00:00:00:00:00:12": 12,
-                "00:00:00:00:00:11": ofproto_v1_3.OFPP_LOCAL,
+                "00:00:00:00:00:11": LOCAL_PORT,
             },
             0x12: {
                 "00:00:00:00:00:11": 11,
-                "00:00:00:00:00:12": ofproto_v1_3.OFPP_LOCAL,
+                "00:00:00:00:00:12": LOCAL_PORT,
                 "00:00:00:00:00:21": 21,
                 "00:00:00:00:00:22": 22,
             },
             0x21: {
                 "00:00:00:00:00:12": 12,
                 "00:00:00:00:00:23": 23,
-                "00:00:00:00:00:21": ofproto_v1_3.OFPP_LOCAL,
+                "00:00:00:00:00:21": LOCAL_PORT,
             },
             0x22: {
                 "00:00:00:00:00:12": 12,
                 "00:00:00:00:00:23": 23,
-                "00:00:00:00:00:22": ofproto_v1_3.OFPP_LOCAL,
+                "00:00:00:00:00:22": LOCAL_PORT,
             },
             0x23: {
                 "00:00:00:00:00:21": 21,
                 "00:00:00:00:00:22": 22,
-                "00:00:00:00:00:23": ofproto_v1_3.OFPP_LOCAL,
+                "00:00:00:00:00:23": LOCAL_PORT,
                 "00:00:00:00:00:31": 31,
                 "00:00:00:00:00:32": 32,
             },
             0x31: {
                 "00:00:00:00:00:23": 23,
                 "00:00:00:00:00:33": 33,
-                "00:00:00:00:00:31": ofproto_v1_3.OFPP_LOCAL,
+                "00:00:00:00:00:31": LOCAL_PORT,
             },
             0x32: {
                 "00:00:00:00:00:23": 23,
                 "00:00:00:00:00:33": 33,
-                "00:00:00:00:00:32": ofproto_v1_3.OFPP_LOCAL,
+                "00:00:00:00:00:32": LOCAL_PORT,
             },
             0x33: {
                 "00:00:00:00:00:31": 31,
                 "00:00:00:00:00:32": 32,
-                "00:00:00:00:00:33": ofproto_v1_3.OFPP_LOCAL,
+                "00:00:00:00:00:33": LOCAL_PORT,
             },
         }
         # 每一个交换机都有其邻居的arp表
@@ -124,50 +127,19 @@ class SimpleSwitch13(app_manager.RyuApp):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        # install table-miss flow entry
-        #
-        # We specify NO BUFFER to max_len of the output action due to
-        # OVS bug. At this moment, if we specify a lesser number, e.g.,
-        # 128, OVS will send Packet-In with invalid buffer_id and
-        # truncated packet data. In that case, we cannot output packets
-        # correctly.  The bug has been fixed in OVS v2.1.0.
-
         """
         默认丢包
         阻止ovs接口产生的ipv6 mld、nd包
         如后续需要做ipv6的链路发现等处理，需要处理ipv6相关数据包
         """
-        match = parser.OFPMatch()
-        actions = []
-        self.add_flow(datapath, 0, match, actions)
+        # match = parser.OFPMatch()
+        # actions = []
+        # self.add_flow(datapath, 0, match, actions)
 
         # 1. ARP -> 控制器
         match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_ARP)
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER)]
         self.add_flow(datapath, 10, match, actions)
-
-        """
-        捕获所有tcp包，并发送至控制器
-        """
-        macth_tcp = parser.OFPMatch(
-            eth_type=ether_types.ETH_TYPE_IP, ip_proto=inet.IPPROTO_TCP
-        )
-        """
-        1. OFPP_NORMAL: 发送至交换机的正常处理流程
-        2. OFPP_CONTROLLER: 发送至控制器（而且控制器只分析，并不处理）
-        """
-        actions_tcp = [
-            parser.OFPActionOutput(ofproto.OFPP_NORMAL, ofproto.OFPCML_NO_BUFFER),
-            parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER),
-        ]
-        self.add_flow(datapath, 1, macth_tcp, actions_tcp)
-
-        # """
-        # drop ipv6 包
-        # """
-        # match_ipv6 = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IPV6)
-        # # actions_ipv6 = [parser.OFPActionOutput(ofproto.OFPMBT_DROP)]
-        # self.add_flow(datapath, 1, match_ipv6, actions=[])
         """
         给每个switch下发默认二层流表
         """
