@@ -1,0 +1,50 @@
+name: ryu-p2p
+
+topology:
+  defaults:
+    kind: linux
+    image: ryu-bgp:latest
+  nodes:
+    r1:
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 10.1.2.1/30 dev eth-r2
+              target: container
+              phase: on-exit
+            - command: ip addr add 101.1.1.1/30 dev eth-h1
+              target: container
+              phase: on-exit
+            # - command: ryu-manager bgpApp.py --bgp-app-config-file bgpconf.py
+            #   target: container
+            #   phase: on-exit
+      binds:
+        - ./configs/r1.py:/app/bgpconf.py
+    r2:
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 10.1.2.2/30 dev eth-r1
+              target: container
+              phase: on-exit
+            - command: ip addr add 102.2.2.1/30 dev eth-h2
+              target: container
+              phase: on-exit
+            # - command: ryu-manager bgpApp.py --bgp-app-config-file bgpconf.py
+            #   target: container
+            #   phase: on-exit
+      binds:
+        - ./configs/r2.py:/app/bgpconf.py
+    h1:
+      exec:
+        - ip addr add 101.1.1.100/24 dev eth-r1
+        - ip route replace 0/0 via 101.1.1.1
+    h2:
+      exec:
+        - ip addr add 102.2.2.100/24 dev eth-r2
+        - ip route replace 0/0 via 102.2.2.1
+
+  links:
+    - endpoints: ["r1:eth-r2", "r2:eth-r1"]
+    - endpoints: ["r1:eth-h1", "h1:eth-r1"]
+    - endpoints: ["r2:eth-h2", "h2:eth-r2"]
