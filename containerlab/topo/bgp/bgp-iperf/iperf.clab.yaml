@@ -3,7 +3,7 @@ name: iperf
 topology:
   defaults:
     kind: linux
-    image: frr-alpine:latest
+    image: quay.io/frrouting/frr:10.1.1
     binds:
       - daemons:/etc/frr/daemons
   nodes:
@@ -15,13 +15,15 @@ topology:
         - ./configs/r2.conf:/etc/frr/frr.conf
     h1:
       exec:
-        - apk add iperf3
+        # - apk add iperf3
         - ip addr add 101.1.1.100/24 dev eth-r1
+        - ip addr add 2001:da8:215:183f::100/64 dev eth-r1
         - ip route replace 0/0 via 101.1.1.1
     h2:
       exec:
-        - apk add iperf3
+        # - apk add iperf3
         - ip addr add 102.2.2.100/24 dev eth-r2
+        - ip addr add 2404:6800:4005:812::100/64 dev eth-r2
         - ip route replace 0/0 via 102.2.2.1
 
   links:
