@@ -1,9 +1,11 @@
-name: ryu-p2p
+name: osken-p2p
 
 topology:
   defaults:
     kind: linux
-    image: ryu-bgp:latest
+    image: osken-bgp:latest
+    binds:
+      - ./bgpApp.py:/app/bgpApp.py
   nodes:
     r1:
       stages:
@@ -21,11 +23,9 @@ topology:
             - command: ip addr add 2222:11::1/64 dev eth-h1
               target: container
               phase: on-exit
-            # - command: ryu-manager bgpApp.py --bgp-app-config-file bgpconf.py
-            #   target: container
-            #   phase: on-exit
       binds:
         - ./configs/r1.py:/app/bgpconf.py
+      cmd: osken-manager bgpApp.py --bgp-app-config-file bgpconf.py
     r2:
       stages:
         create-links:
@@ -42,11 +42,9 @@ topology:
             - command: ip addr add 2222:22::1/64 dev eth-h2
               target: container
               phase: on-exit
-            # - command: ryu-manager bgpApp.py --bgp-app-config-file bgpconf.py
-            #   target: container
-            #   phase: on-exit
       binds:
         - ./configs/r2.py:/app/bgpconf.py
+      cmd: osken-manager bgpApp.py --bgp-app-config-file bgpconf.py
     h1:
       exec:
         - ip addr add 101.1.1.100/24 dev eth-r1

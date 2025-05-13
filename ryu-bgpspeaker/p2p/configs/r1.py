@@ -14,21 +14,24 @@ BGP = {
     # Default local preference
     "local_pref": 100,
     # List of TCP listen host addresses.
-    "bgp_server_hosts": ["10.1.2.1"],
+    "bgp_server_hosts": ["::"],
     # List of BGP neighbors.
     # The parameters for each neighbor are the same as the arguments of
     # BGPSpeaker.neighbor_add() method.
     "neighbors": [
         {
-            "address": "10.1.2.2",
+            "address": "2002::22",
             "remote_as": 65002,
-            "enable_ipv4": True,
-            # 'remote_port': 6666,
+            "enable_ipv6": True,
+            # "enable_ipv4": True,
         },
     ],
     "routes": [
         {
-            "prefix": "10.1.1.1/24",
+            "prefix": "101.1.1.1/24",
+        },
+        {
+            "prefix": "2222:11::/64",
         },
     ],
 }
@@ -38,7 +41,7 @@ BGP = {
 # SSH server configuration.
 # =============================================================================
 SSH = {
-    "ssh_port": 22,
+    "ssh_port": 22222,
     "ssh_host": "localhost",
     # 'ssh_host_key': '/etc/ssh_host_rsa_key',
     # 'ssh_username': 'ryu',

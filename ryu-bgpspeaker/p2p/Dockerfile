@@ -7,9 +7,9 @@ RUN apt update \
 
 WORKDIR /app
 
-RUN wget -O ./ryu.zip "https://github.com/code-with-bgp-XD/ryu-patch/archive/refs/heads/master.zip" \
+RUN wget -O ./ryu.zip "https://github.com/code-with-bgp-XD/ryu-patch/archive/refs/heads/patch/bgp.zip" \
     && unzip ./ryu.zip \
-    && mv ./ryu-patch-master ./ryu \
+    && mv ./ryu-patch-patch-bgp ./ryu \
     && rm ./ryu.zip
 
 FROM base AS runner
@@ -22,10 +22,11 @@ RUN rm -rf /app/ryu
 
 ADD bgpApp.py .
 ADD bgpconf.py .
+ADD start.sh .
 
 RUN apt update \
     && apt install -y --no-install-recommends \
     iproute2 iputils-ping openssh-client
 
 # CMD ["ryu-manager", "bgpApp.py", "--bgp-app-config-file", "bgpconf.py"]
-CMD ["/bin/bash"]
+CMD ["bash"]

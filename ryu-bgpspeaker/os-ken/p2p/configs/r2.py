@@ -5,31 +5,32 @@ import os
 # =============================================================================
 # BGP configuration.
 # =============================================================================
-BGP = {   
+BGP = {
     # AS number for this BGP instance.
-    "local_as": 65001,
-    # 'local_port': 5555,
+    "local_as": 65002,
     # BGP Router ID.
-    "router_id": "127.0.0.1",
+    "router_id": "2.2.2.2",
     # Default local preference
     "local_pref": 100,
     # List of TCP listen host addresses.
-    "bgp_server_hosts": ["::"],
+    "bgp_server_hosts": ["0.0.0.0", "::"],
     # List of BGP neighbors.
     # The parameters for each neighbor are the same as the arguments of
     # BGPSpeaker.neighbor_add() method.
     "neighbors": [
         {
-            "address": "192.168.114.100",
-            "remote_as": 65002,
-            "enable_ipv4": True,
+            "address": "10.1.2.1",
+            "remote_as": 65001,
             "enable_ipv6": True,
-            # 'remote_port': 6666,
+            # "enable_ipv4": True,
         },
     ],
     "routes": [
         {
-            "prefix": "10.10.1.0/24",
+            "prefix": "102.2.2.1/24",
+        },
+        {
+            "prefix": "2222:22::/64",
         },
     ],
 }
@@ -39,7 +40,7 @@ BGP = {
 # SSH server configuration.
 # =============================================================================
 SSH = {
-    "ssh_port": 4990,
+    "ssh_port": 22222,
     "ssh_host": "localhost",
     # 'ssh_host_key': '/etc/ssh_host_rsa_key',
     # 'ssh_username': 'ryu',

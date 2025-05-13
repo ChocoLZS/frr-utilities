@@ -1,0 +1,3 @@
+ryu-manager bgpApp.py --bgp-app-config-file bgp_sample_conf1.py
+
+# 如果bgp的监听端口为默认BGP端口，则需要加上sudo，如果是虚拟环境下需要sudo -E.

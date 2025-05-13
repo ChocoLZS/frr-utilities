@@ -1,31 +1,31 @@
-from ryu.base import app_manager
-from ryu.controller.handler import set_ev_cls
-from ryu.services.protocols.bgp import application as bgp_application
+from os_ken.base import app_manager
+from os_ken.controller.handler import set_ev_cls
+from os_ken.services.protocols.bgp import application as bgp_application
 
-from ryu.controller import ofp_event
-from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER
-from ryu.controller.handler import set_ev_cls
-from ryu.ofproto import ofproto_v1_3
-from ryu.lib.packet import packet
-from ryu.lib.packet import ethernet
-from ryu.lib.packet import ether_types
+from os_ken.controller import ofp_event
+from os_ken.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER
+from os_ken.controller.handler import set_ev_cls
+from os_ken.ofproto import ofproto_v1_3
+from os_ken.lib.packet import packet
+from os_ken.lib.packet import ethernet
+from os_ken.lib.packet import ether_types
 
 
-class MyBGPApp(app_manager.RyuApp):
+class MyBGPApp(app_manager.OSKenApp):
     _CONTEXTS = {
-        "ryubgpspeaker": bgp_application.RyuBGPSpeaker,
+        "os_kenbgpspeaker": bgp_application.OSKenBGPSpeaker,
     }
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
     def __init__(self, *args, **kwargs):
         super(MyBGPApp, self).__init__(*args, **kwargs)
 
-        # Stores "ryu.services.protocols.bgp.application.RyuBGPSpeaker"
+        # Stores "os_ken.services.protocols.bgp.application.OSKenBGPSpeaker"
         # instance in order to call the APIs of
-        # "ryu.services.protocols.bgp.bgpspeaker.BGPSpeaker" via
+        # "os_ken.services.protocols.bgp.bgpspeaker.BGPSpeaker" via
         # "self.app.speaker".
         # Please note at this time, "BGPSpeaker" is NOT instantiated yet.
-        self.app = kwargs["ryubgpspeaker"]
+        self.app = kwargs["os_kenbgpspeaker"]
         self.mac_to_port = {}
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
