@@ -1,0 +1,222 @@
+name: osken-multi
+
+topology:
+  defaults:
+    kind: linux
+    image: ghcr.io/code-with-bgp-xd/infrastructure-osken:latest
+    binds:
+      - ./bgpApp.py:/app/bgpApp.py
+    cmd: osken-manager bgpApp.py --bgp-app-config-file bgpconf.py
+  nodes:
+    r11:
+      binds:
+        - ./configs/r11.py:/app/bgpconf.py
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 1.0.1.1/32 dev lo
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.11.12.1/30 dev eth-r12
+              target: container
+              phase: on-exit
+            - command: ip addr add 100.1.1.1/24 dev eth-h1
+              target: container
+              phase: on-exit
+            - command: ip route add 1.0.1.2/32 dev eth-r12
+              target: container
+              phase: on-exit
+
+    r12:
+      binds:
+        - ./configs/r12.py:/app/bgpconf.py
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 1.0.1.2/32 dev lo
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.11.12.2/30 dev eth-r11
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.12.21.1/30 dev eth-r21
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.12.22.1/30 dev eth-r22
+              target: container
+              phase: on-exit
+            - command: ip route add 1.0.1.1/32 dev eth-r11
+              target: container
+              phase: on-exit
+            - command: ip route add 2.0.2.1/32 dev eth-r21
+              target: container
+              phase: on-exit
+            - command: ip route add 2.0.2.2/32 dev eth-r22
+              target: container
+              phase: on-exit
+              
+    r21:
+      binds:
+        - ./configs/r21.py:/app/bgpconf.py
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 2.0.2.1/32 dev lo
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.12.21.2/30 dev eth-r12
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.21.23.1/30 dev eth-r23
+              target: container
+              phase: on-exit
+            - command: ip route add 1.0.1.2/32 dev eth-r12
+              target: container
+              phase: on-exit
+            - command: ip route add 2.0.2.3/32 dev eth-r23
+              target: container
+              phase: on-exit
+    r22:
+      binds:
+        - ./configs/r22.py:/app/bgpconf.py
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 2.0.2.2/32 dev lo
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.12.22.2/30 dev eth-r12
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.22.23.1/30 dev eth-r23
+              target: container
+              phase: on-exit
+            - command: ip route add 1.0.1.2/32 dev eth-r12
+              target: container
+              phase: on-exit
+            - command: ip route add 2.0.2.3/32 dev eth-r23
+              target: container
+              phase: on-exit
+    r23:
+      binds:
+        - ./configs/r23.py:/app/bgpconf.py
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 2.0.2.3/32 dev lo
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.21.23.2/30 dev eth-r21
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.22.23.2/30 dev eth-r22
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.23.31.1/30 dev eth-r31
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.23.32.1/30 dev eth-r32
+              target: container
+              phase: on-exit
+            - command: ip route add 2.0.2.1/32 dev eth-r21
+              target: container
+              phase: on-exit
+            - command: ip route add 2.0.2.2/32 dev eth-r22
+              target: container
+              phase: on-exit
+            - command: ip route add 3.0.3.1/32 dev eth-r31
+              target: container
+              phase: on-exit
+            - command: ip route add 3.0.3.2/32 dev eth-r32
+              target: container
+              phase: on-exit
+    r31:
+      binds:
+        - ./configs/r31.py:/app/bgpconf.py
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 3.0.3.1/32 dev lo
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.23.31.2/30 dev eth-r23
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.31.33.1/30 dev eth-r33
+              target: container
+              phase: on-exit
+            - command: ip route add 2.0.2.3/32 dev eth-r23
+              target: container
+              phase: on-exit
+            - command: ip route add 3.0.3.3/32 dev eth-r33
+              target: container
+              phase: on-exit      
+    r32:
+      binds:
+        - ./configs/r32.py:/app/bgpconf.py
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 3.0.3.2/32 dev lo
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.23.32.2/30 dev eth-r23
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.32.33.1/30 dev eth-r33
+              target: container
+              phase: on-exit
+            - command: ip route add 2.0.2.3/32 dev eth-r23
+              target: container
+              phase: on-exit
+            - command: ip route add 3.0.3.3/32 dev eth-r33
+              target: container
+              phase: on-exit
+    r33:
+      binds:
+        - ./configs/r33.py:/app/bgpconf.py
+      stages:
+        create-links:
+          exec:
+            - command: ip addr add 3.0.3.3/32 dev lo
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.31.33.2/30 dev eth-r31
+              target: container
+              phase: on-exit
+            - command: ip addr add 10.32.33.2/30 dev eth-r32
+              target: container
+              phase: on-exit
+            - command: ip addr add 103.3.3.1/24 dev eth-h3
+              target: container
+              phase: on-exit
+            - command: ip route add 3.0.3.1/32 dev eth-r31
+              target: container
+              phase: on-exit
+            - command: ip route add 3.0.3.2/32 dev eth-r32
+              target: container
+              phase: on-exit
+    h1:
+      exec:
+        - ip addr add 100.1.1.100/24 dev eth-r11
+        - ip route replace 0/0 via 100.1.1.1
+      cmd: /bin/bash
+    h3:
+      exec:
+        - ip addr add 103.3.3.100/24 dev eth-r33
+        - ip route replace 0/0 via 103.3.3.1
+      cmd: /bin/bash
+    dummy:
+
+  links:
+    - endpoints: ["r11:eth-r12", "r12:eth-r11"]
+    - endpoints: ["r12:eth-r21", "r21:eth-r12"]
+    - endpoints: ["r12:eth-r22", "r22:eth-r12"]
+    - endpoints: ["r21:eth-r23", "r23:eth-r21"]
+    - endpoints: ["r22:eth-r23", "r23:eth-r22"]
+    - endpoints: ["r23:eth-r31", "r31:eth-r23"]
+    - endpoints: ["r23:eth-r32", "r32:eth-r23"]
+    - endpoints: ["r31:eth-r33", "r33:eth-r31"]
+    - endpoints: ["r32:eth-r33", "r33:eth-r32"]
+    - endpoints: ["r11:eth-h1", "h1:eth-r11"]
+    - endpoints: ["r33:eth-h3", "h3:eth-r33"]
