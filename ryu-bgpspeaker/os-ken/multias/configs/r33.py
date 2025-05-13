@@ -20,18 +20,20 @@ BGP = {
     # BGPSpeaker.neighbor_add() method.
     "neighbors": [
         {
-            "address": "3.0.3.2",
+            "address": "10.31.33.1",
             "remote_as": 30,
             "enable_ipv6": True,
             "enable_ipv4": True,
             "is_next_hop_self": True,
+            # "local_address": "3.0.3.3",
         },
         {
-            "address": "3.0.3.1",
+            "address": "10.32.33.1",
             "remote_as": 30,
             "enable_ipv6": True,
             "enable_ipv4": True,
             "is_next_hop_self": True,
+            # "local_address": "3.0.3.3",
         },
     ],
     "routes": [
